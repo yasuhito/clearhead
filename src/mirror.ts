@@ -130,22 +130,24 @@ export class Mirror {
     await rm(this.path, { force: true });
   }
   async remove() {
-    if (this.directory) {
-      try {
+    try {
+      if (this.directory) {
         await this.checkDirectory();
         await rm(this.directory, { recursive: true, force: true });
-      } catch (error) {
-        if (
-          !error ||
-          typeof error !== "object" ||
-          !("code" in error) ||
-          error.code !== "ENOENT"
-        )
-          throw error;
       }
+    } catch (error) {
+      if (
+        !error ||
+        typeof error !== "object" ||
+        !("code" in error) ||
+        error.code !== "ENOENT"
+      )
+        throw error;
+    } finally {
+      // Refusing unsafe cleanup must not retain ownership of a replaced path.
+      this.path = undefined;
+      this.directory = undefined;
+      this.identity = undefined;
     }
-    this.path = undefined;
-    this.directory = undefined;
-    this.identity = undefined;
   }
 }

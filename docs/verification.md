@@ -6,9 +6,9 @@ Implementation scope: [spec #1](https://github.com/yasuhito/pi-context-tidy/issu
 
 Environment: Linux, Node.js 26.10.0, Pi 0.99.2, TypeScript 5.9, Vitest 4.1.11. The advertised Node minimum follows Pi's requirement; Node 22 itself was not exercised.
 
-- A clean `npm ci --ignore-scripts` followed by `npm run check`: strict source/test typecheck, Biome formatting/lint, **37 tests across 12 files passed**.
+- A clean `npm ci --ignore-scripts --offline` followed by `npm run check`: strict source/test typecheck, Biome formatting/lint, **38 tests across 12 files passed**.
 - Real resource-loader extension loading, Pi SDK/session runtime, local filesystem, ordinary tools, and deterministic provider streams are used, not a mocked ExtensionAPI.
-- The packaged Pi CLI was exercised as an RPC subprocess with explicit extension paths, isolated settings, offline mode, and a deterministic provider. It demonstrated command registration, ON/OFF/status, next-input updates, idempotent ON, normal-input restoration, sanitized rejection notifications, persistent last reason, and cleanup.
+- The packaged Pi CLI was exercised as an RPC subprocess with explicit extension paths, isolated settings, offline mode, and a deterministic provider. It demonstrated command registration, ON/OFF/status, next-input updates, idempotent ON, normal-input restoration, sanitized rejection notifications, persistent last reason, and cleanup. A separate regression replaces the owned directory, verifies visible OFF cleanup refusal, then verifies ON creates fresh usable 0700/0600 storage, applies a self-edit, and leaves the replacement's identity, permissions, files, and contents untouched through shutdown.
 - Interactive packaged CLI was exercised through a pseudo-terminal at 60 and 120 columns. ON/OFF command feedback and the compact footer indicator were inspected in the terminal stream. No custom TUI component or dashboard is implemented.
 - Tests use in-memory test credential storage or an isolated CLI agent directory. No user credentials were read or printed, and no live model/network service was used.
 
@@ -37,12 +37,13 @@ One judgement-call finding: repeated overlay-reset assignments (possible Duplica
 
 ## Spec review
 
-Four behavioral findings, all reproduced and fixed at the public Pi/provider seam:
+Five behavioral findings, all reproduced and fixed at the public Pi/provider or packaged CLI seam:
 
 1. Unchanged snapshots returned previous request objects, which Pi interpreted as context changes and needlessly collapsed system/tool transitions. Semantically unchanged input now returns the current request's original objects.
 2. Loss of the owned temporary directory prevented future baseline publication indefinitely. A later baseline publication can recreate the known missing private path; replacement directories are not adopted.
 3. Status remained `overlay` after a self-edit restored the normal conversation. Status now reflects actual effective-versus-normal input equality.
 4. Rotating generation on every inference made ordinary read-then-write proposals stale before use. Append-only calls now retain the generation and existing source IDs; accepted edits and resets rotate it. Whole-file replacement still deliberately deletes omitted source units, so retaining intervening units requires surgical edits or a current-file read/modify/write.
+5. A replaced owned directory caused cleanup to throw before cached ownership was cleared, leaving OFF/ON permanently reusing the refused path. `remove()` now detaches path/directory/identity in `finally`, even when safe cleanup refuses. The CLI regression verifies recovery into fresh private storage without adopting or deleting the replacement.
 
 Cleanup failures are reported without leaking raw exception/document content. Status keeps the last meaningful acceptance/rejection/reset reason. All requested v1 features have implemented paths and acceptance evidence above; no outstanding spec findings remain. Structural validity is not semantic correctness or universal provider acceptance.
 
