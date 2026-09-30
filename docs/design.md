@@ -1,6 +1,6 @@
 # pi-context-tidy design
 
-Status: accepted. Shared understanding is confirmed under user-authorized delegated design decisions. The behavioral frontier is resolved. No implementation is authorized by this document.
+Status: accepted. Shared understanding is confirmed under user-authorized delegated design decisions. The behavioral frontier is resolved. Implementation was subsequently authorized separately under [spec #1](https://github.com/yasuhito/pi-context-tidy/issues/1); verification evidence is maintained in [verification.md](verification.md).
 
 ## Purpose
 
@@ -88,7 +88,7 @@ Use UTF-8 JSON, `CONTEXT.json`, rather than inventing an ambiguous text delimite
 Top-level fields:
 
 - `format`: fixed `pi-context-tidy/v1`.
-- `generation`: current snapshot identifier, required and read-only.
+- `generation`: current working-context generation identifier, required and read-only. Append-only inference calls retain it and preserve existing source IDs, enabling separate read/write tool calls. Accepted document changes, resets, and invalidated baselines rotate it.
 - `units`: ordered source or note units.
 
 A source unit has `kind: "source"`, a read-only `id`, and `messages`. Most units contain one message. A tool-exchange unit contains its assistant call message and every corresponding result in original order. Its message list cannot be edited structurally; omit or move the entire unit instead.
@@ -112,7 +112,7 @@ This document mirrors the editable conversation at this hook, not the complete p
 5. Validate the complete resulting conversation, including exchange pairing and nonempty input. On success, use it for this inference and publish the next generation's mirror. Preserve all new activity; never rerun tools or alter their persisted results.
 6. On malformed, stale, inconsistent, unreadable, or unpublishable input, discard the candidate and overlay and return the incoming normal conversation. Remain ON, report the rejection/reset reason, and attempt a fresh baseline mirror at a subsequent boundary. A failed mirror publication cannot leave a partially activated edit.
 
-Use deterministic source IDs within each generation and a unique generation token. Compare source prefix content and metadata, not object identity: Pi clones the request messages. Reset boundaries invalidate both generations and overlays. A retry with an unchanged normal prefix is valid; provider recovery omissions or native edits that change the prefix require fallback, even if no compaction completes.
+Use deterministic source IDs within each generation and a unique generation token. Append-only calls can extend the mirror without rotating the token; a source unit omitted from a whole-document replacement is deleted even if it was added after an earlier read in the same generation. Surgical edits or an atomic read/modify/write avoid accidentally dropping such units. Old accepted/reset generations remain invalid. Compare source prefix content and metadata, not object identity: Pi clones the request messages. Reset boundaries invalidate both generations and overlays. A retry with an unchanged normal prefix is valid; provider recovery omissions or native edits that change the prefix require fallback, even if no compaction completes.
 
 Record no durable overlay state. A failure can restore a much larger normal input and provoke Pi's ordinary overflow recovery; v1 does not guarantee fitting within the model window or automatically salvage the draft.
 
@@ -130,7 +130,7 @@ Other context-changing extensions can alter the upstream baseline or downstream 
 
 ## Acceptance scenarios for later implementation
 
-Unverified: none of these scenarios has been executed. Provider compatibility, including signed replay behavior, remains unverified until future implementation and integration testing. API inspection establishes available interfaces, not working end-to-end behavior.
+These are design acceptance scenarios, not evidence by themselves. Executed runtime tests and their coverage are recorded in [verification.md](verification.md). Live vendor compatibility, including signed replay behavior, remains unverified. API inspection alone establishes available interfaces, not working end-to-end behavior.
 
 - Delete a long completed exchange, then append a new tool exchange: deleted material stays absent while ON, and raw log entries remain unchanged.
 - Edit the latest user instruction or insert a growing tracker: accepted if structurally valid; no shrink requirement and no latest-user pin.
@@ -142,4 +142,4 @@ Unverified: none of these scenarios has been executed. Provider compatibility, i
 
 ## Design completion
 
-The design is accepted and no consequential questions remain within the agreed scope. Provider compatibility and acceptance-scenario execution remain explicitly unverified. Implementation, installation, to-spec, commit, and push are outside this completed design session.
+The design is accepted and no consequential questions remain within the agreed scope. The original design session ended without implementation. Subsequent authorization permits local development, specification/tickets, verification, and local commits; remote push and publication remain prohibited. The verified boundary is documented separately from unverified live vendor compatibility.

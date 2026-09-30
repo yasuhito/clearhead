@@ -1,0 +1,69 @@
+# pi-context-tidy
+
+An independent Pi extension for exploring model-directed context self-editing, inspired by [Context Language Models](https://arxiv.org/html/2609.37725v1).
+
+The model edits a private context document using ordinary read/edit/write/bash tools. Accepted edits change subsequent inference inputs through a cumulative, memory-only working-context overlay. **Original session messages and tool activity are not rewritten.** This is an experiment, not a guarantee of better answers or lower compute.
+
+## Use locally
+
+Requires Node.js 22.19+ and Pi **0.99.2**. From this checkout:
+
+```sh
+npm ci --ignore-scripts
+pi --extension ./index.ts
+```
+
+Alternatively, use the locally installed Pi: `./node_modules/.bin/pi --extension ./index.ts`. No global installation is needed. Npm publication is disabled (`private: true` in package metadata); no npm release is part of v1.
+
+The extension starts **OFF**. Commands:
+
+- `/context-tidy on`: enable; idempotent while already ON.
+- `/context-tidy status`: show ON/OFF, baseline/overlay, document path, and last acceptance/rejection/reset reason.
+- `/context-tidy off`: discard overlay and draft, remove temporary storage, restore normal Pi input.
+
+Commands wait until the agent is idle. The TUI shows a small `tidy ON/OFF` status. RPC uses supported notifications; print/JSON mode writes diagnostics to stderr, not protocol stdout.
+
+After ON, send an ordinary prompt, for example: "Inspect your context document and use it to maintain a compact task tracker when useful." The document is published before inference and its path/protocol is supplied through a Pi-owned guideline. There is no mandatory editing schedule or shrink threshold.
+
+## Editing contract
+
+The UTF-8 JSON document is `CONTEXT.json` in a private temporary directory. It represents the editable conversation at this extension's hook, **not the complete provider request**.
+
+- Keep `format`, `generation`, source IDs, message roles, read-only descriptors, and text-slot structure unchanged. Generation and existing IDs remain stable through append-only calls; accepted document changes and resets rotate the generation.
+- Replace text values freely, including the latest user instruction. Use an empty string to remove a slot's text.
+- Delete/reorder whole source units. A tool exchange contains its assistant call message and **all** corresponding results, including parallel calls; keep its internal structure/order intact. Whole-document replacement deletes omitted units, including units published since an earlier read in the same generation. Prefer surgical edits or read/modify/write in one Bash call when retaining intervening activity matters.
+- Insert non-authoritative notes, for example `{ "kind": "note", "id": "new:tracker", "text": "TODO: verify the result" }`. IDs after `new:` use letters, digits, underscores, or dashes and must be unique.
+- Notes become ordinary source units in the next snapshot. They reach the provider as user-role text, never as system authority.
+- Context growth is allowed. Plain text without the document structure, role changes, invented tool activity, duplicate keys/IDs, old generations, and modified descriptors are rejected.
+
+See [the accepted design](docs/design.md) for the complete contract. No code was copied from pi-clm.
+
+At the **next context boundary**, the extension parses and validates the candidate, appends new conversation activity, and publishes the next snapshot before activating it. The tool exchange performing an edit is newly appended activity; that candidate cannot retroactively remove it. No tool is re-executed.
+
+An invalid/stale/unreadable/unpublishable candidate discards **both draft and overlay** and sends normal input, with a visible reason. ON remains enabled; subsequent boundaries attempt a fresh normal-input baseline. The last known reason remains visible in status until a new edit or reset supersedes it. Persistent filesystem failures can prevent further edits; OFF/ON or fixing local access may be necessary.
+
+## Resets and limitations
+
+- The overlay is not saved. Reload, resume, fork/new/session replacement, branch navigation, OFF, and shutdown discard it. Runtime replacement starts OFF; branch navigation and successful native compaction retain ON with a fresh baseline.
+- Pi's manual and automatic compaction stay enabled. They summarize Pi's canonical session context, **not this overlay**. Successful compaction resets it; failure/cancellation alone does not, unless the input baseline changed.
+- Restart/reset/compaction can reintroduce deleted material. These experiments mix native summarization and self-editing; they are **not pure self-editing benchmarks**.
+- Latest user instructions are editable. Accidental or injection-induced **loss of intent** is an accepted risk. Original logs are not a protection against forgetting or disobeying an omitted instruction.
+- System prompts and tool declarations remain Pi-owned. Tool identities/arguments, images, and opaque thinking/signature metadata are preserved. Structural preservation does not imply universal vendor acceptance of edited signed histories.
+- Fallback can restore a much larger input. There is no overflow manager or guarantee that input fits the model window. Smaller input can invalidate prefix caches and does not prove lower compute.
+- Storage uses directory 0700/file 0600, no-follow regular-file checks, and atomic snapshot publication. These are Unix-local checks, not a sandbox against the model or same-user processes. Crash/forced termination can leave sensitive temporary files; no sweeper/archive is provided.
+- Existing remote/container tools may not see the local document. No remote bridge exists. Subsequent context-changing extensions can alter the final provider input; no third-party coordination is supplied.
+- Tested on Linux with Pi 0.99.2. Other Pi versions, platforms, and live vendor signed replay are unverified.
+
+## Development and evidence
+
+```sh
+npm run typecheck
+npm run lint
+npm test
+# or all three:
+npm run check
+```
+
+Tests load the actual extension through Pi's resource loader, run the real SDK/session runtime and ordinary tools, inspect deterministic provider inputs and persisted history, and also exercise the packaged CLI over RPC. They use isolated temporary settings and fake boundary providers, with no credential access or network services.
+
+See [verification](docs/verification.md) for the executed checks, review, and remaining limitations. This project has no training, automatic editing model calls, durable checkpoints, dashboards, custom compaction, or provider payload patching.
