@@ -42,3 +42,15 @@ A complete tool exchange containing only successful dedicated self-edit calls an
 
 **Acceptance receipt**:
 A compact, non-authoritative acknowledgment of an accepted self-edit, replacing its edit-only exchange in effective context but not session history.
+
+**Generation**:
+The identity of one working-context editing revision; an edit proposal is valid only against the generation it was read from.
+_Avoid_: Inference counter, turn number
+
+**Revision**:
+The publication count of a context document within a generation, marking which units existed when it was read; a whole-document replacement can delete only units that existed at its revision.
+_Avoid_: Version, snapshot number
+
+**Mirror**:
+The private file where the current context document is published for ordinary file tools.
+_Avoid_: Session file, cache
