@@ -44,7 +44,7 @@ A complete tool exchange containing only successful dedicated self-edit calls an
 A compact, non-authoritative acknowledgment of an accepted self-edit, replacing its edit-only exchange in effective context but not session history.
 
 **Generation**:
-The identity of one working-context editing revision; an edit proposal is valid only against the generation it was read from.
+The identity of one accepted editing state of the working context; an edit proposal is valid only against the generation it was read from.
 _Avoid_: Inference counter, turn number
 
 **Revision**:
