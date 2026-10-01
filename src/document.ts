@@ -36,7 +36,7 @@ export interface NoteUnit {
   text: string;
 }
 export interface ContextDocument {
-  format: "pi-context-tidy/v1";
+  format: "clearhead/v1";
   generation: string;
   // Read-only publication counter within a generation. A whole-document
   // replacement carrying an older revision can delete only units that
@@ -153,7 +153,7 @@ export function snapshot(messages: Message[], previous?: Snapshot): Snapshot {
     };
   });
   return {
-    document: { format: "pi-context-tidy/v1", generation, revision, units },
+    document: { format: "clearhead/v1", generation, revision, units },
     originals,
     firstSeen,
   };

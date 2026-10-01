@@ -87,7 +87,7 @@ Use UTF-8 JSON, `CONTEXT.json`, rather than inventing an ambiguous text delimite
 
 Top-level fields:
 
-- `format`: fixed `pi-context-tidy/v1`.
+- `format`: fixed `clearhead/v1`.
 - `generation`: current working-context generation identifier, required and read-only. Append-only inference calls retain it and preserve existing source IDs, enabling separate read/write tool calls. Accepted document changes, resets, and invalidated baselines rotate it.
 - `revision`: read-only publication counter within the generation. A written document may delete only units that existed at its revision; later units are retained. See ADR 0003.
 - `units`: ordered source or note units.

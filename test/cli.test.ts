@@ -75,6 +75,8 @@ test("the shipped Pi CLI loads the extension and exposes edited input over RPC w
     const mirror = fixture.notification.match(/document: (.+)/)?.[1];
     expect(mirror).toBeTruthy();
     const d = await document(mirror!);
+    expect(d.format).toBe("clearhead/v1");
+    expect(dirname(mirror!).split("/").at(-1)).toMatch(/^clearhead-/);
     source(d).messages[0]!.texts[0]!.text = "edited CLI input";
     await writeFile(mirror!, JSON.stringify(d));
     await client.promptAndWait("next inference");

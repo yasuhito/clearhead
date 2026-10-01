@@ -36,7 +36,7 @@ export class Mirror {
   async create() {
     if (this.path) return;
     const directory = await mkdtemp(
-      join(await realpath(tmpdir()), "pi-context-tidy-"),
+      join(await realpath(tmpdir()), "clearhead-"),
     );
     try {
       await chmod(directory, 0o700);

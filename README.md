@@ -17,6 +17,8 @@ pi --extension ./index.ts
 
 Alternatively, use the locally installed Pi: `./node_modules/.bin/pi --extension ./index.ts`. No global installation is needed. Npm publication is disabled (`private: true` in package metadata); no npm release is part of v1.
 
+The context document format is `clearhead/v1`. After updating an already-running Pi, use `/reload` or start a new session, then `/clearhead on`. Reload resets the in-memory overlay and temporary mirror; reuse only the freshly published document. Older document formats are rejected.
+
 The extension starts **OFF**. Commands:
 
 - `/clearhead on`: enable; idempotent while already ON.

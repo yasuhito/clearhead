@@ -45,7 +45,7 @@ test.each(["symlink", "directory", "missing", "publication"] as const)(
       expect(await readFile(external, "utf8")).toBe(JSON.stringify(d));
       if (failure === "publication") {
         await rt.session.prompt("recover baseline");
-        expect((await document(path)).format).toBe("pi-context-tidy/v1");
+        expect((await document(path)).format).toBe("clearhead/v1");
       }
     } finally {
       await rt.close();

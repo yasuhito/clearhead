@@ -4,7 +4,7 @@ A Pi user exploring Context Language Models cannot currently let the model edit 
 
 ## Solution
 
-Implement independent pi-context-tidy v1: explicit ON/OFF controls, a private editable JSON context document accessible to existing file/Bash tools, and a cumulative memory-only working-context overlay applied at the next Pi context boundary. Validate candidates atomically and fall back to normal input on invalid or stale edits.
+Implement independent clearhead v1: explicit ON/OFF controls, a private editable JSON context document accessible to existing file/Bash tools, and a cumulative memory-only working-context overlay applied at the next Pi context boundary. Validate candidates atomically and fall back to normal input on invalid or stale edits.
 
 ## User Stories
 
@@ -40,7 +40,7 @@ Implement independent pi-context-tidy v1: explicit ON/OFF controls, a private ed
 - Build a small extension adapter, context-document validation/overlay engine, and private mirror storage. No code copied from pi-clm.
 - Use Pi 0.99.2 conversation-only context hooks and structured prompt guidelines. Do not rewrite session entries or persist overlay checkpoints.
 - Commands wait for idle; ON is idempotent. OFF discards overlay and draft. Report state in TUI where supported and stderr otherwise.
-- UTF-8 JSON contract: fixed format pi-context-tidy/v1, read-only generation, ordered units. Source units contain immutable IDs, roles, descriptors, and text slots. Only slot text may change. New note units contain kind, unique new-prefixed ID, and text; they receive source IDs on subsequent mirrors.
+- UTF-8 JSON contract: fixed format clearhead/v1, read-only generation, ordered units. Source units contain immutable IDs, roles, descriptors, and text slots. Only slot text may change. New note units contain kind, unique new-prefixed ID, and text; they receive source IDs on subsequent mirrors.
 - A complete tool exchange contains its assistant calls and all results in original internal order. Preserve call identity, arguments, images, thinking/signature metadata; edit only text. Reject invalid structure rather than repairing or flattening it.
 - Validate at the next context boundary before publishing the next generation. Require an unchanged normal-input prefix, append new activity, validate nonempty final input and exchange consistency, and activate only after successful mirror publication.
 - Reject stale/non-append baselines and malformed/unreadable/unpublishable mirrors atomically; discard overlay and use normal input with a sanitized visible reason. Remain ON for further exploration.

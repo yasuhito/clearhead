@@ -24,7 +24,7 @@ test("dedicated edits cannot overwrite duplicate-key legacy drafts before strict
       path,
       JSON.stringify(d).replace(
         '{"format":',
-        '{"format":"pi-context-tidy/v1","format":',
+        '{"format":"clearhead/v1","format":',
       ),
     );
     return [

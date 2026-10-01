@@ -47,6 +47,12 @@ test.each([
     },
   ],
   [
+    "legacy document format",
+    (d: ContextDocument) => {
+      Object.assign(d, { format: ["pi", "context", "tidy/v1"].join("-") });
+    },
+  ],
+  [
     "changed slots",
     (d: ContextDocument) => {
       source(d).messages[0]!.texts[0]!.slot = "unknown";
@@ -99,34 +105,36 @@ test.each([
   },
 );
 
-test.each([
-  "{",
-  '{"format":"pi-context-tidy/v1","format":"pi-context-tidy/v1"}',
-])("rejects malformed or duplicate-key JSON: %s", async (bad) => {
-  const rt = await runtime();
-  try {
-    await rt.session.prompt("/clearhead on");
-    await rt.session.prompt("original");
-    const path = mirrorPath(rt.requests[0]!);
-    const d = await document(path);
-    source(d).messages[0]!.texts[0]!.text = "invalid-duplicate-text";
-    // Duplicate decoded keys including escaped spellings must not be last-key-wins.
-    const raw = bad.startsWith('{"format')
-      ? JSON.stringify(d).replace(
-          '"format":',
-          '"for\\u006dat":"wrong","format":',
-        )
-      : bad;
-    await writeFile(path, raw);
-    await rt.session.prompt("continue");
-    expect(JSON.stringify(conversation(rt.requests[1]!))).toContain("original");
-    expect(JSON.stringify(conversation(rt.requests[1]!))).not.toContain(
-      "invalid-duplicate-text",
-    );
-    // A fresh baseline should be available after the rejected proposal.
-    await rt.session.prompt("fresh baseline");
-    expect((await document(path)).format).toBe("pi-context-tidy/v1");
-  } finally {
-    await rt.close();
-  }
-});
+test.each(["{", '{"format":"clearhead/v1","format":"clearhead/v1"}'])(
+  "rejects malformed or duplicate-key JSON: %s",
+  async (bad) => {
+    const rt = await runtime();
+    try {
+      await rt.session.prompt("/clearhead on");
+      await rt.session.prompt("original");
+      const path = mirrorPath(rt.requests[0]!);
+      const d = await document(path);
+      source(d).messages[0]!.texts[0]!.text = "invalid-duplicate-text";
+      // Duplicate decoded keys including escaped spellings must not be last-key-wins.
+      const raw = bad.startsWith('{"format')
+        ? JSON.stringify(d).replace(
+            '"format":',
+            '"for\\u006dat":"wrong","format":',
+          )
+        : bad;
+      await writeFile(path, raw);
+      await rt.session.prompt("continue");
+      expect(JSON.stringify(conversation(rt.requests[1]!))).toContain(
+        "original",
+      );
+      expect(JSON.stringify(conversation(rt.requests[1]!))).not.toContain(
+        "invalid-duplicate-text",
+      );
+      // A fresh baseline should be available after the rejected proposal.
+      await rt.session.prompt("fresh baseline");
+      expect((await document(path)).format).toBe("clearhead/v1");
+    } finally {
+      await rt.close();
+    }
+  },
+);
