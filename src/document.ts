@@ -38,11 +38,17 @@ export interface NoteUnit {
 export interface ContextDocument {
   format: "pi-context-tidy/v1";
   generation: string;
+  // Read-only publication counter within a generation. A whole-document
+  // replacement carrying an older revision can delete only units that
+  // already existed at that revision; later units were never seen by it.
+  revision: number;
   units: (SourceUnit | NoteUnit)[];
 }
 export interface Snapshot {
   document: ContextDocument;
   originals: Map<string, Message[]>;
+  // Revision at which each source unit first appeared in this generation.
+  firstSeen: Map<string, number>;
 }
 
 function texts(message: Message): TextSlot[] {
@@ -113,12 +119,28 @@ function exchanges(messages: Message[]): Message[][] {
   }
   return groups;
 }
-export function snapshot(messages: Message[]): Snapshot {
+// With `previous`, the new snapshot continues that generation: it keeps the
+// generation token, advances the revision, and remembers when each unit first
+// appeared so that stale whole-document writes cannot delete unseen units.
+export function snapshot(messages: Message[], previous?: Snapshot): Snapshot {
   const originals = new Map<string, Message[]>();
+  const firstSeen = new Map<string, number>();
+  const generation = previous?.document.generation ?? randomUUID();
+  const revision = (previous?.document.revision ?? 0) + 1;
   let messageIndex = 0;
   const units: SourceUnit[] = exchanges(messages).map((group, index) => {
     const id = `u${index}`;
     originals.set(id, group);
+    // Positional IDs make the prefix line up when the hook already verified
+    // it; the content check keeps snapshot() correct on its own as well.
+    const carried = previous?.firstSeen.get(id);
+    firstSeen.set(
+      id,
+      carried !== undefined &&
+        isDeepStrictEqual(previous?.originals.get(id), group)
+        ? carried
+        : revision,
+    );
     return {
       kind: "source",
       id,
@@ -131,8 +153,9 @@ export function snapshot(messages: Message[]): Snapshot {
     };
   });
   return {
-    document: { format: "pi-context-tidy/v1", generation: randomUUID(), units },
+    document: { format: "pi-context-tidy/v1", generation, revision, units },
     originals,
+    firstSeen,
   };
 }
 function replaceTexts(original: Message, slots: TextSlot[]): Message {
@@ -189,15 +212,23 @@ function parse(raw: string): unknown {
 }
 export function apply(raw: string, baseline: Snapshot): Message[] {
   const candidate = record(parse(raw));
-  exactKeys(candidate, ["format", "generation", "units"]);
+  exactKeys(candidate, ["format", "generation", "revision", "units"]);
   if (candidate.format !== baseline.document.format)
     reject("unsupported document format");
   if (candidate.generation !== baseline.document.generation)
     reject("stale generation");
+  const revision = candidate.revision;
+  if (
+    typeof revision !== "number" ||
+    !Number.isInteger(revision) ||
+    revision < 1 ||
+    revision > baseline.document.revision
+  )
+    reject("unknown revision");
   if (!Array.isArray(candidate.units)) reject("invalid units");
   const known = new Map(baseline.document.units.map((unit) => [unit.id, unit]));
   const seen = new Set<string>();
-  return candidate.units.flatMap((value) => {
+  const edited = candidate.units.flatMap((value) => {
     const unit = record(value);
     if (typeof unit.id !== "string" || seen.has(unit.id))
       reject("invalid or duplicate unit ID");
@@ -257,4 +288,16 @@ export function apply(raw: string, baseline: Snapshot): Message[] {
         : replaceTexts(originals[index]!, message.texts),
     );
   });
+  // The author's own output must be a conversation; unseen units cannot
+  // rescue a document that deleted everything the author saw.
+  if (!edited.length) reject("empty effective context");
+  // Units published after the candidate's revision were never visible to its
+  // author: omitting them is not a deletion. They were appended after
+  // everything the author saw, so they follow the edited units in order.
+  const unseen = baseline.document.units.flatMap((unit) =>
+    !seen.has(unit.id) && (baseline.firstSeen.get(unit.id) ?? 0) > revision
+      ? baseline.originals.get(unit.id)!
+      : [],
+  );
+  return [...edited, ...unseen];
 }

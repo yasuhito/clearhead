@@ -8,12 +8,11 @@ import { expect, test } from "vitest";
 import {
   conversation,
   document,
+  done,
   mirrorPath,
   runtime,
   source,
 } from "./runtime.ts";
-
-const done = [{ type: "text" as const, text: "done" }];
 
 test("dedicated edits cannot overwrite duplicate-key legacy drafts before strict validation", async () => {
   const r = await runtime(async (context, request) => {

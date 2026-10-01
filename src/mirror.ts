@@ -13,7 +13,21 @@ import {
 } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { RejectedEdit } from "./document.ts";
+import { type ContextDocument, RejectedEdit } from "./document.ts";
+
+// The exact bytes a published document has; any difference is a pending file edit.
+export function serialize(document: ContextDocument) {
+  return `${JSON.stringify(document, null, 2)}\n`;
+}
+
+function isMissing(error: unknown) {
+  return (
+    !!error &&
+    typeof error === "object" &&
+    "code" in error &&
+    error.code === "ENOENT"
+  );
+}
 
 export class Mirror {
   private directory: string | undefined;
@@ -41,14 +55,7 @@ export class Mirror {
     try {
       current = await lstat(this.directory);
     } catch (error) {
-      if (
-        !recreateMissing ||
-        !error ||
-        typeof error !== "object" ||
-        !("code" in error) ||
-        error.code !== "ENOENT"
-      )
-        throw error;
+      if (!recreateMissing || !isMissing(error)) throw error;
       // Only recreate our known missing path, never adopt a replacement directory.
       await mkdir(this.directory, { mode: 0o700 });
       current = await lstat(this.directory);
@@ -70,14 +77,7 @@ export class Mirror {
       if (!info.isFile() || info.isSymbolicLink() || info.nlink !== 1)
         throw new RejectedEdit("mirror is not a private regular file");
     } catch (error) {
-      if (
-        allowMissing &&
-        error &&
-        typeof error === "object" &&
-        "code" in error &&
-        error.code === "ENOENT"
-      )
-        return;
+      if (allowMissing && isMissing(error)) return;
       throw error;
     }
   }
@@ -100,7 +100,7 @@ export class Mirror {
       await handle.close();
     }
   }
-  async publish(value: unknown) {
+  async publish(document: ContextDocument) {
     await this.checkDirectory(true);
     await this.checkFile(true);
     const staging = `${this.path}.next-${randomUUID()}`;
@@ -114,7 +114,7 @@ export class Mirror {
           constants.O_NOFOLLOW,
         0o600,
       );
-      await handle.writeFile(`${JSON.stringify(value, null, 2)}\n`, "utf8");
+      await handle.writeFile(serialize(document), "utf8");
       await handle.close();
       handle = undefined;
       await rename(staging, this.path!);
@@ -136,13 +136,7 @@ export class Mirror {
         await rm(this.directory, { recursive: true, force: true });
       }
     } catch (error) {
-      if (
-        !error ||
-        typeof error !== "object" ||
-        !("code" in error) ||
-        error.code !== "ENOENT"
-      )
-        throw error;
+      if (!isMissing(error)) throw error;
     } finally {
       // Refusing unsafe cleanup must not retain ownership of a replaced path.
       this.path = undefined;

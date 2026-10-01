@@ -44,6 +44,11 @@ test("ordinary read then write can edit the observed document across append-only
     expect(JSON.stringify(conversation(rt.requests[2]!))).toContain(
       "write-context",
     );
+    // The written document predates the read exchange: a unit the writer
+    // never saw is retained rather than treated as a deletion.
+    expect(JSON.stringify(conversation(rt.requests[2]!))).toContain(
+      "read-context",
+    );
     expect(await readFile(rt.session.sessionFile!, "utf8")).toContain(
       "original read-write intent",
     );

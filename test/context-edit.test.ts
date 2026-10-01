@@ -106,12 +106,14 @@ test("consecutive edit-only receipts cannot induce a re-edit loop", async () => 
   try {
     await r.session.prompt("/context-tidy on");
     await r.session.prompt("original evidence");
-    expect(JSON.stringify(conversation(r.requests[2]!))).toContain(
-      "original evidence",
-    );
-    expect(JSON.stringify(conversation(r.requests[2]!))).not.toContain(
-      "Context edit accepted",
-    );
+    // The locked re-edit attempts are rejected alone; the first accepted edit
+    // and its single receipt remain, and no new receipt is minted.
+    for (const index of [2, 3]) {
+      const input = JSON.stringify(conversation(r.requests[index]!));
+      expect(input).toContain("edited-1");
+      expect(input).not.toContain("original evidence");
+      expect(input.split("Context edit accepted").length - 1).toBe(1);
+    }
     const results = r.manager
       .getEntries()
       .filter(
@@ -134,18 +136,12 @@ test("consecutive edit-only receipts cannot induce a re-edit loop", async () => 
         }),
       ]),
     );
-    expect(JSON.stringify(conversation(r.requests[3]!))).toContain(
-      "original evidence",
-    );
-    expect(JSON.stringify(conversation(r.requests[3]!))).not.toContain(
-      "Context edit accepted",
-    );
   } finally {
     await r.close();
   }
 });
 
-test("schema-invalid dedicated calls discard a previously accepted overlay", async () => {
+test("schema-invalid dedicated calls are rejected alone and keep a previously accepted overlay", async () => {
   const r = await runtime(async (context, request) => {
     if (request !== 1 && request !== 3) return [{ type: "text", text: "done" }];
     const d = await document(mirrorPath(context));
@@ -177,8 +173,13 @@ test("schema-invalid dedicated calls discard a previously accepted overlay", asy
     await r.session.prompt("original intent");
     await r.session.prompt("new user activity");
     const input = JSON.stringify(conversation(r.requests[3]!));
-    expect(input).toContain("original intent");
-    expect(input).not.toContain("Context edit accepted");
+    expect(input).toContain("short");
+    expect(input).not.toContain("original intent");
+    expect(
+      conversation(r.requests[3]!).find(
+        (m) => m.role === "toolResult" && m.toolCallId === "schema-3",
+      ),
+    ).toMatchObject({ isError: true });
   } finally {
     await r.close();
   }

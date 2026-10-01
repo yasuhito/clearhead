@@ -4,6 +4,7 @@ import {
   conversation,
   document,
   mirrorPath,
+  reportsDuring,
   runtime,
   source,
 } from "./runtime.ts";
@@ -24,10 +25,16 @@ test("native threshold compaction remains enabled and resets a cumulative overla
       "overlay information",
     );
     rt.session.settingsManager.setCompactionEnabled(true);
-    await rt.session.prompt("threshold check");
+    const reports = await reportsDuring(() =>
+      rt.session.prompt("threshold check"),
+    );
     expect(rt.manager.getBranch().some((e) => e.type === "compaction")).toBe(
       true,
     );
+    // The overlay must be cleared by the compaction reset itself, not by a
+    // later stale-prefix fallback that would report a rejection.
+    expect(reports).toContain("reset: native compaction");
+    expect(reports).not.toContain("rejected:");
     expect(
       rt.requests
         .slice(2)

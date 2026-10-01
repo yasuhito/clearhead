@@ -230,3 +230,53 @@ export async function document(path: string) {
 export function conversation(context: TranscriptContext) {
   return context.messages.filter((m) => m.role !== "system");
 }
+export const done = [{ type: "text" as const, text: "done" }];
+export function contextEditCall(
+  id: string,
+  d: ContextDocument,
+  text: string,
+): AssistantMessage["content"][number] {
+  const u = source(d);
+  const m = u.messages[0]!;
+  return {
+    type: "toolCall",
+    id,
+    name: "context_edit",
+    arguments: {
+      generation: d.generation,
+      operations: [
+        {
+          op: "replace",
+          unit: u.id,
+          message: m.id,
+          slot: m.texts[0]!.slot,
+          text,
+        },
+      ],
+    },
+  };
+}
+export function toolResults(rt: { manager: SessionManager }) {
+  return rt.manager
+    .getEntries()
+    .flatMap((entry) =>
+      entry.type === "message" && entry.message.role === "toolResult"
+        ? [entry.message]
+        : [],
+    );
+}
+// Print mode reports status on stderr; capture it around one action.
+export async function reportsDuring(action: () => Promise<unknown>) {
+  const lines: string[] = [];
+  const original = process.stderr.write.bind(process.stderr);
+  process.stderr.write = ((chunk: string | Uint8Array) => {
+    lines.push(String(chunk));
+    return true;
+  }) as typeof process.stderr.write;
+  try {
+    await action();
+  } finally {
+    process.stderr.write = original;
+  }
+  return lines.join("");
+}
