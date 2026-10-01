@@ -1,6 +1,6 @@
-# pi-context-tidy design
+# Clearhead design
 
-Status: accepted. Shared understanding is confirmed under user-authorized delegated design decisions. The behavioral frontier is resolved. Implementation was subsequently authorized separately under [spec #1](https://github.com/yasuhito/pi-context-tidy/issues/1); verification evidence is maintained in [verification.md](verification.md).
+Status: accepted. Shared understanding is confirmed under user-authorized delegated design decisions. The behavioral frontier is resolved. Implementation was subsequently authorized separately under [spec #1](https://github.com/yasuhito/clearhead/issues/1); verification evidence is maintained in [verification.md](verification.md).
 
 ## Purpose
 

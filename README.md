@@ -1,4 +1,4 @@
-# pi-context-tidy
+# Clearhead
 
 An independent Pi extension for exploring model-directed context self-editing, inspired by [Context Language Models](https://arxiv.org/html/2609.37725v1).
 
@@ -6,14 +6,18 @@ The same parent model reads a private context snapshot and submits short edits t
 
 ## Use locally
 
-Requires Node.js 22.19+ and Pi **0.99.2**. From this checkout:
+Requires Node.js 22.19+ and Pi **0.99.2**. Clone the repository, then run:
 
 ```sh
+git clone https://github.com/yasuhito/clearhead.git
+cd clearhead
 npm ci --ignore-scripts
 pi --extension ./index.ts
 ```
 
 Alternatively, use the locally installed Pi: `./node_modules/.bin/pi --extension ./index.ts`. No global installation is needed. Npm publication is disabled (`private: true` in package metadata); no npm release is part of v1.
+
+The project was renamed from `pi-context-tidy` to `clearhead`. The existing `/context-tidy` command, `context_edit` tool, and `pi-context-tidy/v1` document format remain unchanged.
 
 The extension starts **OFF**. Commands:
 
@@ -58,7 +62,7 @@ The UTF-8 JSON document is `CONTEXT.json` in a private temporary directory. It r
 - Notes become ordinary source units in the next snapshot. They reach the provider as user-role text, never as system authority.
 - Context growth is allowed. Plain text without the document structure, role changes, invented tool activity, duplicate keys/IDs, old generations, revisions never published, and modified descriptors are rejected.
 
-See [the accepted design](docs/design.md) and [editing UX spec #5](https://github.com/yasuhito/pi-context-tidy/issues/5) for the complete contract. No code was copied from pi-clm.
+See [the accepted design](docs/design.md) and [editing UX spec #5](https://github.com/yasuhito/clearhead/issues/5) for the complete contract. No code was copied from pi-clm.
 
 At the **next context boundary**, the extension parses and validates the candidate, appends new conversation activity, and publishes the next snapshot before activating it. The tool exchange performing a file edit is newly appended activity; that candidate cannot retroactively remove it. The dedicated tool's complete edit-only exchange is eligible for the receipt projection described above. No tool is re-executed.
 

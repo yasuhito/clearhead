@@ -1,6 +1,6 @@
 # Context Self-Editing
 
-pi-context-tidy explores model-directed changes to the conversation the model receives, while retaining the original conversation record.
+Clearhead explores model-directed changes to the conversation the model receives, while retaining the original conversation record.
 
 ## Language
 
@@ -9,7 +9,7 @@ The original record of messages and tool activity, including material no longer 
 _Avoid_: Live context, edited transcript
 
 **Normal input**:
-The conversation Pi would supply for an inference without pi-context-tidy's edits.
+The conversation Pi would supply for an inference without Clearhead's edits.
 
 **Effective context**:
 The conversation supplied for inference after accepted self-edits, distinct from session history.

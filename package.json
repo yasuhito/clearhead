@@ -1,5 +1,5 @@
 {
-  "name": "pi-context-tidy",
+  "name": "clearhead",
   "version": "0.1.0",
   "private": true,
   "license": "MIT",
@@ -26,10 +26,10 @@
     "@earendil-works/pi-coding-agent": "0.99.2"
   },
   "devDependencies": {
+    "@biomejs/biome": "^2.0.0",
     "@earendil-works/pi-ai": "0.99.2",
     "@earendil-works/pi-coding-agent": "0.99.2",
     "@types/node": "^22.0.0",
-    "@biomejs/biome": "^2.0.0",
     "typescript": "^5.9.0",
     "vitest": "^4.0.0"
   }

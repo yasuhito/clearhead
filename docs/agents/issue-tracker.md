@@ -1,10 +1,10 @@
 # Issue tracker: GitHub
 
-Issues and specs for this repo live in GitHub Issues at https://github.com/yasuhito/pi-context-tidy. Use the `gh` CLI for all operations.
+Issues and specs for this repo live in GitHub Issues at https://github.com/yasuhito/clearhead. Use the `gh` CLI for all operations.
 
 ## Conventions
 
-The examples below infer the repository from `origin`. Outside this repository, pass `--repo yasuhito/pi-context-tidy` explicitly.
+The examples below infer the repository from `origin`. Outside this repository, pass `--repo yasuhito/clearhead` explicitly.
 
 - **Create an issue**: `gh issue create --title "..." --body "..."`. Use `--body-file` with a file or stdin for multi-line bodies.
 - **Read an issue**: `gh issue view <number> --comments`. Fetch structured details and labels with `gh issue view <number> --json number,title,body,labels,comments`.

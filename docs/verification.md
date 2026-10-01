@@ -1,6 +1,6 @@
 # V1 verification
 
-Implementation scope: [spec #1](https://github.com/yasuhito/pi-context-tidy/issues/1), with vertical slices [#2](https://github.com/yasuhito/pi-context-tidy/issues/2), [#3](https://github.com/yasuhito/pi-context-tidy/issues/3), and [#4](https://github.com/yasuhito/pi-context-tidy/issues/4). The parent spec remains open; remote code push/publication is not authorized.
+Implementation scope: [spec #1](https://github.com/yasuhito/clearhead/issues/1), with vertical slices [#2](https://github.com/yasuhito/clearhead/issues/2), [#3](https://github.com/yasuhito/clearhead/issues/3), and [#4](https://github.com/yasuhito/clearhead/issues/4). The parent spec remains open; remote code push/publication is not authorized.
 
 ## Executed checks
 
@@ -60,7 +60,7 @@ No remote push, npm publication, global installation, new services, or authentic
 
 ## Editing UX verification (spec #5)
 
-This section records the current amendment separately from the historical v1 evidence above. Scope: [spec #5](https://github.com/yasuhito/pi-context-tidy/issues/5), with explicit amendments to ADRs 0002 and 0003. Review baseline: `0db270da5af447a6f522e15ab4e736084f1c96c4`. Parent issue #1 was neither modified nor closed.
+This section records the current amendment separately from the historical v1 evidence above. Scope: [spec #5](https://github.com/yasuhito/clearhead/issues/5), with explicit amendments to ADRs 0002 and 0003. Review baseline: `0db270da5af447a6f522e15ab4e736084f1c96c4`. Parent issue #1 was neither modified nor closed.
 
 ### Executed checks and evidence
 

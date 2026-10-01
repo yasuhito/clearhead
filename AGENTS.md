@@ -4,7 +4,7 @@
 
 ### Issue tracker
 
-Track issues and specs in GitHub Issues for `yasuhito/pi-context-tidy`. Before issue operations, read `docs/agents/issue-tracker.md`.
+Track issues and specs in GitHub Issues for `yasuhito/clearhead`. Before issue operations, read `docs/agents/issue-tracker.md`.
 
 ### Triage labels
 
