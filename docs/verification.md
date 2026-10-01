@@ -87,4 +87,26 @@ Separately, the supervisor's independent Spec reviewer found the native-history-
 
 ### Evidence limits
 
-These results demonstrate deterministic real Pi 0.99.2 integration, not live vendor behavior. A separately authorized visible live-model smoke session will be opened and operated by Codex after implementation/review/checks; this development session did not launch it. No live vendor compatibility, signed replay acceptance, token billing reduction, or live-model measurements are claimed yet. No push, npm publication, global install, credential reading, other-repository changes, or permission expansion was performed.
+At implementation commit `f723248`, these results demonstrated deterministic real Pi 0.99.2 integration, not live vendor behavior. The separately authorized visible live-model smoke was still pending; this development session did not launch it. No live vendor compatibility, signed replay acceptance, token billing reduction, or live-model measurements were claimed at that point. No push, npm publication, global install, credential reading, other-repository changes, or permission expansion was performed.
+
+## Live smoke 1 and receipt continuation follow-up
+
+### Supervisor-reported visible live-model evidence
+
+Codex operated a separate visible Pi **0.99.2** session using **openai-codex / gpt-6.1-sol**. The user requested **one direct context_edit, then an answer without rereading**. This development agent did not operate that terminal or inspect credentials.
+
+- The model read a public **26,557-character** source and used several short jq probes.
+- It staged one **593-character** edit containing a **464-character** source summary.
+- The actual next provider payload decreased from **48,106 to 21,757 JSON characters**. The old source marker was absent, the acceptance receipt was present, and the dedicated call/result were absent from that input.
+- After the generic receipt, the model repeated the old-generation edit with **543-character** arguments. The safety guard rejected it and correctly restored normal input, producing a **49,936-character** provider payload.
+- The model then answered the five requested facts from full normal context. **This is not a successful shortened final-answer run.** The first accepted projection demonstrates source replacement and input reduction; the later rejection demonstrates safety fallback, while also exposing a continuation usability failure.
+
+These are supervisor-reported measurements from that one session, in serialized JSON characters, not token/billing measurements or a general live-vendor/signed-replay compatibility claim. No source URL or transcript artifact was supplied here, so none is invented.
+
+### Bounded follow-up and verification
+
+The receipt now states that the context_edit step is complete and already applied, and cues continuation of the substantive task using the edited context without repeating the edit. The Pi-owned guideline explains the same completion meaning and warns against replaying the removed call or its old generation. The receipt remains non-authoritative and overlay-only.
+
+TDD at the existing real SDK/provider seam first failed on the missing completed-step cue, then passed after the wording change. The test observes both receipt and guideline in actual next provider input, preserved raw history, no retained dedicated exchange, and shorter whole-request/conversation input. Final `npm run check` passes typecheck, Biome, and **56 tests across 15 files**. The accept/reject/reject guard and native-deletion recovery tests remain green. No guard, fallback, tools, lifecycle timing or automatic inference behavior changed.
+
+Focused parent-agent direct review against `f723248` found no outstanding Standards or Spec issues: the production diff changes only receipt/guideline wording, with tests and explanatory docs. The previously unavailable delegation harness was not represented as a new independent review. A fresh visible live-model smoke will be operated by Codex after this local commit; **the changed cue has not yet been shown to prevent repetition in a live run**. No push or other publication was performed.

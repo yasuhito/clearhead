@@ -1,3 +1,4 @@
+import { getCurrentSystemPrompt } from "@earendil-works/pi-ai";
 import { expect, test } from "vitest";
 import {
   conversation,
@@ -48,8 +49,21 @@ test("same parent model replaces a slot using IDs without reproducing old text",
     expect(
       conversation(r.requests[1]!).some((m) => m.role === "assistant"),
     ).toBe(false);
-    expect(JSON.stringify(conversation(r.requests[1]!))).toContain(
-      "Context edit accepted",
+    const nextInput = JSON.stringify(conversation(r.requests[1]!));
+    expect(nextInput).toContain("Context edit accepted");
+    expect(nextInput).toContain(
+      "context_edit step is complete and already applied",
+    );
+    expect(nextInput).toContain(
+      "Continue your substantive task using the edited context",
+    );
+    expect(nextInput).toContain("do not repeat this edit");
+    const guideline = getCurrentSystemPrompt(r.requests[1]!.messages);
+    expect(guideline).toContain(
+      "An acceptance receipt means the context_edit step is complete and already applied",
+    );
+    expect(guideline).toContain(
+      "continue your substantive task using the edited context",
     );
     expect(JSON.stringify(conversation(r.requests[1]!)).length).toBeLessThan(
       500,

@@ -31,7 +31,8 @@ export function acceptanceProjection(
   const receipt: Message = {
     role: "custom",
     customType: "context-tidy-receipt",
-    content: "Context edit accepted.",
+    content:
+      "Context edit accepted. The context_edit step is complete and already applied. Continue your substantive task using the edited context; do not repeat this edit.",
     display: false,
     timestamp: Date.now(),
   };
