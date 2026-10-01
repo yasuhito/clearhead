@@ -20,12 +20,12 @@ test("OFF waits for the active inference to settle before discarding its documen
     return [{ type: "text", text: "done" }];
   });
   try {
-    await rt.session.prompt("/context-tidy on");
+    await rt.session.prompt("/clearhead on");
     const running = rt.session.prompt("slow inference");
     await entered;
     const path = mirrorPath(rt.requests[0]!);
     let offSettled = false;
-    const off = rt.session.prompt("/context-tidy off").then(() => {
+    const off = rt.session.prompt("/clearhead off").then(() => {
       offSettled = true;
     });
     await new Promise<void>((resolve) => setImmediate(resolve));

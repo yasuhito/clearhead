@@ -20,7 +20,7 @@ Mirror the working context into a private editable document. The editing UX amen
 
 V1 has no durable checkpoints. Reset overlay and pending edits on reload/resume, branch change, session replacement, and OFF. Starting again reintroduces original material from Pi's current normal input. The overlay is cumulative during an uninterrupted active session, not across these reset boundaries.
 
-Expose clear explicit ON/OFF. Selected operational defaults: OFF on fresh extension load; `/context-tidy on|off|status`; a small TUI status indicator when available. OFF returns to normal Pi input and discards edits, not merely pauses them. No custom dashboard. ON is idempotent while already ON; it does not clear an active overlay. Control changes wait until the agent is idle to avoid changing the mode midway through an active tool batch.
+Expose clear explicit ON/OFF. Selected operational defaults: OFF on fresh extension load; `/clearhead on|off|status`; a small TUI status indicator when available. OFF returns to normal Pi input and discards edits, not merely pauses them. No custom dashboard. ON is idempotent while already ON; it does not clear an active overlay. Control changes wait until the agent is idle to avoid changing the mode midway through an active tool batch.
 
 ### Native compaction
 

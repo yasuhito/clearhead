@@ -22,7 +22,7 @@ test.each(["symlink", "directory", "missing", "publication"] as const)(
   async (failure) => {
     const rt = await runtime();
     try {
-      await rt.session.prompt("/context-tidy on");
+      await rt.session.prompt("/clearhead on");
       await rt.session.prompt("original");
       const path = mirrorPath(rt.requests[0]!);
       const d = await document(path);
@@ -57,14 +57,14 @@ test("mirror is private, atomic snapshots leave no staging data, and OFF/shutdow
   const rt = await runtime();
   let path: string;
   try {
-    await rt.session.prompt("/context-tidy on");
+    await rt.session.prompt("/clearhead on");
     await rt.session.prompt("private data");
     path = mirrorPath(rt.requests[0]!);
     expect((await stat(path)).mode & 0o777).toBe(0o600);
     expect((await stat(dirname(path))).mode & 0o777).toBe(0o700);
-    await rt.session.prompt("/context-tidy off");
+    await rt.session.prompt("/clearhead off");
     await expect(access(dirname(path))).rejects.toThrow();
-    await rt.session.prompt("/context-tidy on");
+    await rt.session.prompt("/clearhead on");
     await rt.session.prompt("private again");
     path = mirrorPath(rt.requests[1]!);
   } finally {

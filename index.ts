@@ -50,14 +50,14 @@ export default function contextTidy(pi: ExtensionAPI) {
   function showStatus(ctx: ExtensionContext) {
     if (ctx.mode === "tui")
       ctx.ui.setStatus(
-        "context-tidy",
-        `tidy ${enabled ? "ON" : "OFF"} ${overlay ? "overlay" : "normal"}`,
+        "clearhead",
+        `clearhead ${enabled ? "ON" : "OFF"} ${overlay ? "overlay" : "normal"}`,
       );
   }
   function report(ctx: ExtensionContext, reason: string, warning = false) {
     outcome = reason;
     showStatus(ctx);
-    const text = `context-tidy ${enabled ? "ON" : "OFF"}; ${overlay ? "overlay" : "normal input"}; ${reason}${mirror.path ? `; document: ${mirror.path}` : ""}`;
+    const text = `clearhead ${enabled ? "ON" : "OFF"}; ${overlay ? "overlay" : "normal input"}; ${reason}${mirror.path ? `; document: ${mirror.path}` : ""}`;
     if (ctx.hasUI) ctx.ui.notify(text, warning ? "warning" : "info");
     else process.stderr.write(`${text}\n`);
   }
@@ -118,7 +118,7 @@ export default function contextTidy(pi: ExtensionAPI) {
           content: [
             {
               type: "text",
-              text: "Context edit staged, not yet applied. It is validated at the next inference and takes effect only if it passes. The next context document shows the outcome: if it still holds the unedited content, the edit was rejected and the reason is in the context-tidy status.",
+              text: "Context edit staged, not yet applied. It is validated at the next inference and takes effect only if it passes. The next context document shows the outcome: if it still holds the unedited content, the edit was rejected and the reason is in /clearhead status.",
             },
           ],
           details: undefined,
@@ -142,7 +142,7 @@ export default function contextTidy(pi: ExtensionAPI) {
     },
   });
   pi.on("session_start", (_event, ctx) => showStatus(ctx));
-  pi.registerCommand("context-tidy", {
+  pi.registerCommand("clearhead", {
     description: "Context self-editing: on, off, status",
     handler: async (args, ctx) => {
       await ctx.waitForIdle();
@@ -172,7 +172,7 @@ export default function contextTidy(pi: ExtensionAPI) {
           ctx,
           args.trim() === "status"
             ? outcome
-            : "usage: /context-tidy on|off|status",
+            : "usage: /clearhead on|off|status",
         );
     },
   });
@@ -257,7 +257,7 @@ export default function contextTidy(pi: ExtensionAPI) {
     try {
       await mirror.remove();
     } catch {
-      process.stderr.write("context-tidy: shutdown mirror cleanup failed\n");
+      process.stderr.write("clearhead: shutdown mirror cleanup failed\n");
     }
   });
 }

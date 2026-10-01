@@ -17,15 +17,15 @@ pi --extension ./index.ts
 
 Alternatively, use the locally installed Pi: `./node_modules/.bin/pi --extension ./index.ts`. No global installation is needed. Npm publication is disabled (`private: true` in package metadata); no npm release is part of v1.
 
-The project was renamed from `pi-context-tidy` to `clearhead`. The existing `/context-tidy` command, `context_edit` tool, and `pi-context-tidy/v1` document format remain unchanged.
+The project was renamed from `pi-context-tidy` to `clearhead`. The user command is `/clearhead` (replacing `/context-tidy`, with no legacy alias). The `context_edit` tool and `pi-context-tidy/v1` document format remain unchanged.
 
 The extension starts **OFF**. Commands:
 
-- `/context-tidy on`: enable; idempotent while already ON.
-- `/context-tidy status`: show ON/OFF, baseline/overlay, document path, and last acceptance/rejection/reset reason.
-- `/context-tidy off`: discard overlay and draft, remove temporary storage, restore normal Pi input.
+- `/clearhead on`: enable; idempotent while already ON.
+- `/clearhead status`: show ON/OFF, baseline/overlay, document path, and last acceptance/rejection/reset reason.
+- `/clearhead off`: discard overlay and draft, remove temporary storage, restore normal Pi input.
 
-Commands wait until the agent is idle. The TUI shows a small `tidy ON/OFF` status. RPC uses supported notifications; print/JSON mode writes diagnostics to stderr, not protocol stdout.
+Commands wait until the agent is idle. The TUI shows a small `clearhead ON/OFF` status. RPC uses supported notifications; print/JSON mode writes diagnostics to stderr, not protocol stdout.
 
 After ON, send an ordinary prompt, for example: "Inspect your context document and use it to maintain a compact task tracker when useful." The document is published before inference and its path/protocol is supplied through a Pi-owned guideline. There is no mandatory editing schedule or shrink threshold.
 
@@ -47,7 +47,7 @@ Read the context document for its `generation` and unit/message/slot IDs, then c
 
 Use IDs actually present in your snapshot; slot names can also be `content`, `summary`, `command`, or `output`. Operations run in order; `before: null` means the end. One proposal is allowed per inference boundary. Unknown fields/IDs, stale generations, no-ops and an empty edited conversation are rejected atomically. Keep at least a note when replacing the whole conversation; a document whose own units are empty is rejected even if units it never saw would have been retained. Codemode and subagents are optional, not required.
 
-The tool reports **staged, not yet applied**. Only after validation and next-snapshot publication succeed does the overlay activate; a staged edit that fails that validation is reported in `/context-tidy status` with its reason, and the next context document still holds the unedited content, so the model can verify the outcome by reading it. A `context_edit` call that conflicts with a pending file edit or with a proposal already staged in the same response is rejected by itself: the document, the pending edit and the overlay stay as they were, and the pending edit is validated normally at the next inference. Any rejected `context_edit` call changes nothing; a previously accepted overlay survives it. A complete successful edit-only exchange becomes one compact non-authoritative acceptance receipt in the next input, not in raw history. The receipt explicitly says the `context_edit` step is complete and already applied, and cues the model to continue its substantive task using the edited context without repeating the edit. Mixed parallel exchanges, failed calls, substantive assistant text, and nested calls remain whole; individual signed call arguments are never surgically changed. Later acceptances replace earlier overlay receipts.
+The tool reports **staged, not yet applied**. Only after validation and next-snapshot publication succeed does the overlay activate; a staged edit that fails that validation is reported in `/clearhead status` with its reason, and the next context document still holds the unedited content, so the model can verify the outcome by reading it. A `context_edit` call that conflicts with a pending file edit or with a proposal already staged in the same response is rejected by itself: the document, the pending edit and the overlay stay as they were, and the pending edit is validated normally at the next inference. Any rejected `context_edit` call changes nothing; a previously accepted overlay survives it. A complete successful edit-only exchange becomes one compact non-authoritative acceptance receipt in the next input, not in raw history. The receipt explicitly says the `context_edit` step is complete and already applied, and cues the model to continue its substantive task using the edited context without repeating the edit. Mixed parallel exchanges, failed calls, substantive assistant text, and nested calls remain whole; individual signed call arguments are never surgically changed. Later acceptances replace earlier overlay receipts.
 
 Consecutive edit-only proposals are blocked until substantive user/assistant-text/unrelated-tool activity or an explicit reset. A candidate rejected at the next inference clears the overlay, republishes a normal-input document at once so the advertised path stays readable, and **does not clear this loop lock**; a third attempt cannot restart an accept/reject cycle. OFF/session resets and successful native compaction clear it. The extension does not request extra inference calls.
 

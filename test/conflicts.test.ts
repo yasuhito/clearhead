@@ -23,7 +23,7 @@ test("a dedicated call yields to a pending file edit, which is validated and app
     return [replaceCall("tool-after-file", d, "tool edited intent")];
   });
   try {
-    await r.session.prompt("/context-tidy on");
+    await r.session.prompt("/clearhead on");
     await r.session.prompt("original intent");
     const rejected = toolResults(r).find(
       (m) => m.toolCallId === "tool-after-file",
@@ -54,7 +54,7 @@ test("a second dedicated call in one response is rejected alone while the first 
     ];
   });
   try {
-    await r.session.prompt("/context-tidy on");
+    await r.session.prompt("/clearhead on");
     await r.session.prompt("original intent");
     const first = toolResults(r).find((m) => m.toolCallId === "first-proposal");
     const second = toolResults(r).find(
@@ -94,7 +94,7 @@ test("a rejected dedicated call leaves a previously accepted overlay in place", 
     ];
   });
   try {
-    await r.session.prompt("/context-tidy on");
+    await r.session.prompt("/clearhead on");
     await r.session.prompt("original intent");
     await r.session.prompt("new user activity");
     expect(
@@ -122,7 +122,7 @@ test("a boundary rejection republishes a readable normal-input document for the 
     return done;
   });
   try {
-    await r.session.prompt("/context-tidy on");
+    await r.session.prompt("/clearhead on");
     await r.session.prompt("original intent");
     await writeFile(mirrorPath(r.requests[0]!), "not json");
     await r.session.prompt("after rejection");
@@ -143,7 +143,7 @@ test("a later acceptance replaces the earlier overlay receipt instead of accumul
     return [replaceCall(`edit-${request}`, d, `edited-${request}`)];
   });
   try {
-    await r.session.prompt("/context-tidy on");
+    await r.session.prompt("/clearhead on");
     await r.session.prompt("original intent");
     await r.session.prompt("new user activity");
     const input = JSON.stringify(conversation(r.requests[3]!));
@@ -176,7 +176,7 @@ test("a staged proposal rejected at the next inference reports its reason in the
     ],
   );
   try {
-    await r.session.prompt("/context-tidy on");
+    await r.session.prompt("/clearhead on");
     const reports = await reportsDuring(() =>
       r.session.prompt("original intent"),
     );

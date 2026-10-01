@@ -74,7 +74,7 @@ test.each([
   async (_name, mutate) => {
     const rt = await runtime();
     try {
-      await rt.session.prompt("/context-tidy on");
+      await rt.session.prompt("/clearhead on");
       await rt.session.prompt("original");
       const path = mirrorPath(rt.requests[0]!);
       const d = await document(path);
@@ -105,7 +105,7 @@ test.each([
 ])("rejects malformed or duplicate-key JSON: %s", async (bad) => {
   const rt = await runtime();
   try {
-    await rt.session.prompt("/context-tidy on");
+    await rt.session.prompt("/clearhead on");
     await rt.session.prompt("original");
     const path = mirrorPath(rt.requests[0]!);
     const d = await document(path);

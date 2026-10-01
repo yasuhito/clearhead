@@ -48,7 +48,7 @@ test("dedicated edits cannot overwrite duplicate-key legacy drafts before strict
     ];
   });
   try {
-    await r.session.prompt("/context-tidy on");
+    await r.session.prompt("/clearhead on");
     await r.session.prompt("original evidence");
     expect(conversation(r.requests[1]!)[0]).toMatchObject({
       content: [{ type: "text", text: "original evidence" }],
@@ -105,7 +105,7 @@ test("a staged proposal changed before acceptance cannot receive a receipt", asy
     ],
   );
   try {
-    await r.session.prompt("/context-tidy on");
+    await r.session.prompt("/clearhead on");
     await r.session.prompt("original evidence");
     expect(conversation(r.requests[1]!)[0]).toMatchObject({
       content: [{ type: "text", text: "original evidence" }],
@@ -174,7 +174,7 @@ test("mixed parallel exchange keeps every signed call and result after accepting
     ],
   );
   try {
-    await r.session.prompt("/context-tidy on");
+    await r.session.prompt("/clearhead on");
     await r.session.prompt("long evidence");
     const messages = conversation(r.requests[1]!);
     const raw = r.manager
@@ -228,7 +228,7 @@ test("ordered delete, move and note operations accumulate and preserve the raw J
     },
   );
   try {
-    await r.session.prompt("/context-tidy on");
+    await r.session.prompt("/clearhead on");
     await r.session.prompt("obsolete evidence");
     await r.session.prompt("second evidence");
     const saved = await readFile(r.session.sessionFile!, "utf8");
@@ -252,7 +252,7 @@ test("ordered delete, move and note operations accumulate and preserve the raw J
     expect(JSON.stringify(conversation(r.requests[4]!))).not.toContain(
       "obsolete evidence",
     );
-    await r.session.prompt("/context-tidy off");
+    await r.session.prompt("/clearhead off");
     await r.session.prompt("reset activity");
     expect(JSON.stringify(conversation(r.requests[5]!))).toContain(
       "obsolete evidence",
@@ -326,7 +326,7 @@ test.each([
       ];
     });
     try {
-      await r.session.prompt("/context-tidy on");
+      await r.session.prompt("/clearhead on");
       await r.session.prompt("original evidence");
       const input = conversation(r.requests[1]!);
       expect(input[0]).toMatchObject({
@@ -384,7 +384,7 @@ test("publication failure after staging restores normal input without an accepta
     ],
   );
   try {
-    await r.session.prompt("/context-tidy on");
+    await r.session.prompt("/clearhead on");
     await r.session.prompt("original evidence");
     const input = conversation(r.requests[1]!);
     expect(input[0]).toMatchObject({
