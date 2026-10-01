@@ -57,3 +57,34 @@ Cleanup failures are reported without leaking raw exception/document content. St
 - `npm audit --omit=dev` reports no production vulnerabilities. Full development audit reports one high-severity affected package, `brace-expansion` (multiple advisories), in Pi 0.99.2's shrinkwrapped dependency tree (installed 5.0.9, fixed upstream in 5.0.12). No upstream/generated files were hand-patched; this pinned development-toolchain limitation remains disclosed. The extension's direct runtime dependency is jsonc-parser.
 
 No remote push, npm publication, global installation, new services, or authentication/permission expansion was performed.
+
+## Editing UX verification (spec #5)
+
+This section records the current amendment separately from the historical v1 evidence above. Scope: [spec #5](https://github.com/yasuhito/pi-context-tidy/issues/5), with explicit amendments to ADRs 0002 and 0003. Review baseline: `0db270da5af447a6f522e15ab4e736084f1c96c4`. Parent issue #1 was neither modified nor closed.
+
+### Executed checks and evidence
+
+- Final local `npm run check`: typecheck, Biome, **56 tests across 15 files passed**. The supervisor independently reported a full 54-test check, then a 55-test implementation state and the four targeted recovery/loop tests passing. The final additional test covers duplicate-key draft rejection.
+- Real Pi SDK/session/provider tests issue generation-scoped replace/delete/move/note calls from the same deterministic parent provider. They observe actual shorter next provider input (both whole-request and conversation lengths), a compact non-system receipt, cumulative edits/new activity, and intact original messages/calls/results. No Python or full old-document reproduction is needed in the model-authored edit.
+- Complete mixed parallel exchanges retain the original assistant message, opaque signatures, both calls with unchanged arguments and both results. No receipt replaces mixed activity. Failed exchanges remain whole. Existing exchange/image/metadata coverage remains green.
+- Ordered operations, stale/unknown unit/message/slot/before IDs, no-ops, invalid notes, empty proposals, malformed tool schemas, staged-candidate tampering, and unsafe mirror I/O all have public-boundary coverage. Rejection restores normal input without a receipt or partially activated edits. Raw JSONL bytes saved before edits remain an unchanged prefix.
+- The receipt/re-edit test observes accept/reject/reject without new substantive activity. Rejection preserves the loop lock; explicit reset semantics remain unchanged. A separate recovery test creates three real Bash exchanges, accepts an edit, omits two old exchanges using Pi-native context edits, observes source-prefix fallback, then verifies fresh user activity permits a new edit. The lock checkpoint uses a raw branch-entry ID rather than projected message counts.
+- Direct Spec review additionally reproduced a duplicate-key legacy draft being overwritten by a dedicated call before strict validation. The tool now validates the existing draft before staging; that SDK regression passes with normal-input fallback.
+- Packaged Pi CLI/RPC coverage executes the short dedicated tool, receives edited input and acceptance receipt, exposes accepted status, and retains raw original history and tool activity. Existing idle controls, OFF, lifecycle/reset, retry, manual/automatic native compaction and storage tests pass unchanged.
+- Isolated packaged TUI runs at **60 and 120 columns** were inspected through pseudo-terminal output. The tool call is compact/collapsed by Pi's standard renderer, staged output is visible, accepted status and `tidy ON overlay` are visible, and OFF returns to `tidy OFF normal`. No clipping or broken extension layout was observed. ANSI captures were local temporary evidence, not committed artifacts. No other trial/comparison window was operated.
+
+### Standards review
+
+Parent-agent direct review of the staged/full working diff against the fixed baseline used repository/global instructions, domain docs/ADRs, and the code-review Fowler smell baseline. No outstanding must-fix standard violations or meaningful smell findings remain; formatting/type issues were handled by tooling. The two requested delegated reviews could not start in this Pi session because the harness lacked Herdr environment identifiers. This limitation is not presented as an independent review.
+
+Separately, the Codex supervisor reports having actually run parallel **read-only Standards and Spec reviewers** following the code-review skill. Its Standards reviewer reported no must-fix findings. This independent report is distinct from the parent-agent direct review.
+
+### Spec review
+
+Parent-agent direct review used the existing v1 spec, editing UX spec #5, amended ADRs, and the requested boundary scenarios. Reproduced and fixed findings: schema failures bypassing tool execution must trigger fallback at the context hook; changed staged candidates must not earn receipts; rejection must preserve the loop lock; duplicate-key legacy drafts must be validated before staging. No outstanding findings remain in the direct review after regression checks.
+
+Separately, the supervisor's independent Spec reviewer found the native-history-deletion checkpoint edge. It was reproduced RED at the real SDK seam and fixed GREEN, while retaining rejection-only loop protection. The supervisor subsequently reported the independent Spec recheck complete: the raw-entry-ID checkpoint fix is resolved, rejection still preserves the checkpoint/lock, and no remaining must-fix findings were found.
+
+### Evidence limits
+
+These results demonstrate deterministic real Pi 0.99.2 integration, not live vendor behavior. A separately authorized visible live-model smoke session will be opened and operated by Codex after implementation/review/checks; this development session did not launch it. No live vendor compatibility, signed replay acceptance, token billing reduction, or live-model measurements are claimed yet. No push, npm publication, global install, credential reading, other-repository changes, or permission expansion was performed.

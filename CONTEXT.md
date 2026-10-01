@@ -36,3 +36,9 @@ _Avoid_: System instruction, fabricated user request
 
 **Tool exchange**:
 An assistant's tool calls together with their corresponding results, including parallel calls in the same assistant message.
+
+**Edit-only exchange**:
+A complete tool exchange containing only successful dedicated self-edit calls and no substantive assistant text. Mixed exchanges are not edit-only.
+
+**Acceptance receipt**:
+A compact, non-authoritative acknowledgment of an accepted self-edit, replacing its edit-only exchange in effective context but not session history.

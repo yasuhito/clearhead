@@ -2,7 +2,7 @@
 
 An independent Pi extension for exploring model-directed context self-editing, inspired by [Context Language Models](https://arxiv.org/html/2609.37725v1).
 
-The model edits a private context document using ordinary read/edit/write/bash tools. Accepted edits change subsequent inference inputs through a cumulative, memory-only working-context overlay. **Original session messages and tool activity are not rewritten.** This is an experiment, not a guarantee of better answers or lower compute.
+The same parent model reads a private context snapshot and submits short edits through `context_edit`, without reproducing old text or writing Python. Ordinary file/Bash editing remains supported. Accepted edits change subsequent inference inputs through a cumulative, memory-only working-context overlay. **Original session messages and tool activity are not rewritten.** This is an experiment, not a guarantee of better answers or lower compute.
 
 ## Use locally
 
@@ -25,6 +25,28 @@ Commands wait until the agent is idle. The TUI shows a small `tidy ON/OFF` statu
 
 After ON, send an ordinary prompt, for example: "Inspect your context document and use it to maintain a compact task tracker when useful." The document is published before inference and its path/protocol is supplied through a Pi-owned guideline. There is no mandatory editing schedule or shrink threshold.
 
+## Short edits
+
+Read the context document for its `generation` and unit/message/slot IDs, then call `context_edit`:
+
+```json
+{
+  "generation": "<snapshot generation>",
+  "operations": [
+    { "op": "replace", "unit": "u0", "message": "m0", "slot": "0", "text": "Concise evidence" },
+    { "op": "delete", "unit": "u1" },
+    { "op": "move", "unit": "u3", "before": "u2" },
+    { "op": "note", "id": "new:tracker", "text": "TODO: verify", "before": null }
+  ]
+}
+```
+
+Use IDs actually present in your snapshot; slot names can also be `content`, `summary`, `command`, or `output`. Operations run in order; `before: null` means the end. One proposal is allowed per inference boundary. Unknown fields/IDs, stale generations, no-ops and an empty edited conversation are rejected atomically. Keep at least a note when replacing the whole conversation. Codemode and subagents are optional, not required.
+
+The tool reports **staged**, not accepted. Only after validation and next-snapshot publication succeed does the overlay activate. A complete successful edit-only exchange becomes one compact non-authoritative acceptance receipt in the next input, not in raw history. Mixed parallel exchanges, failed calls, substantive assistant text, and nested calls remain whole; individual signed call arguments are never surgically changed. Later acceptances replace earlier overlay receipts.
+
+Consecutive edit-only proposals are blocked until substantive user/assistant-text/unrelated-tool activity or an explicit reset. Rejection clears the overlay but **does not clear this loop lock**; a third attempt cannot restart an accept/reject cycle. OFF/session resets and successful native compaction clear it. The extension does not request extra inference calls.
+
 ## Editing contract
 
 The UTF-8 JSON document is `CONTEXT.json` in a private temporary directory. It represents the editable conversation at this extension's hook, **not the complete provider request**.
@@ -36,9 +58,9 @@ The UTF-8 JSON document is `CONTEXT.json` in a private temporary directory. It r
 - Notes become ordinary source units in the next snapshot. They reach the provider as user-role text, never as system authority.
 - Context growth is allowed. Plain text without the document structure, role changes, invented tool activity, duplicate keys/IDs, old generations, and modified descriptors are rejected.
 
-See [the accepted design](docs/design.md) for the complete contract. No code was copied from pi-clm.
+See [the accepted design](docs/design.md) and [editing UX spec #5](https://github.com/yasuhito/pi-context-tidy/issues/5) for the complete contract. No code was copied from pi-clm.
 
-At the **next context boundary**, the extension parses and validates the candidate, appends new conversation activity, and publishes the next snapshot before activating it. The tool exchange performing an edit is newly appended activity; that candidate cannot retroactively remove it. No tool is re-executed.
+At the **next context boundary**, the extension parses and validates the candidate, appends new conversation activity, and publishes the next snapshot before activating it. The tool exchange performing a file edit is newly appended activity; that candidate cannot retroactively remove it. The dedicated tool's complete edit-only exchange is eligible for the receipt projection described above. No tool is re-executed.
 
 An invalid/stale/unreadable/unpublishable candidate discards **both draft and overlay** and sends normal input, with a visible reason. ON remains enabled; subsequent boundaries attempt a fresh normal-input baseline. The last known reason remains visible in status until a new edit or reset supersedes it. Persistent filesystem failures can prevent further edits; OFF/ON or fixing local access may be necessary.
 

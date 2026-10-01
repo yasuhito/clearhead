@@ -14,7 +14,7 @@ Accepted edits persist in a memory-only working-context overlay across inference
 
 ### Private editable document
 
-Mirror the working context into a private editable document accessible through existing read/edit/write/bash tools. Preserve general editing exploration rather than defining semantic compaction tools. Parse and validate the complete candidate atomically before using it; no partial acceptance. No code copied from pi-clm.
+Mirror the working context into a private editable document. The editing UX amendment adds a short generation-scoped `context_edit` tool for replacement, deletion, movement and notes; existing read/edit/write/bash editing remains compatible. This is free textual editing, not a semantic compaction strategy. Parse and validate the complete candidate atomically before using it; no partial acceptance. No code copied from pi-clm. ADR 0002 explicitly records the changed interface choice; [spec #5](editing-ux-spec.md) defines the amendment.
 
 ### Lifetime and controls
 
@@ -79,7 +79,7 @@ These are deliberately stronger structural boundaries than the paper's unrestric
 - No hard pin on any user message; no required shrink threshold.
 - Reject an empty final conversation after appending the new suffix, rather than relying on provider-specific system-only request support. An authored note can represent a whole-context rewrite while retaining the required document structure.
 
-These application mechanics are confirmed. The deterministic document contract below specializes them without adding semantic editing tools or new features.
+These application mechanics are confirmed. The deterministic document contract below remains the validation boundary for both file edits and dedicated operations.
 
 ## Deterministic document contract
 
@@ -108,8 +108,8 @@ This document mirrors the editable conversation at this hook, not the complete p
 1. While OFF, return input unmodified and keep no editable mirror.
 2. On the first context boundary after ON, capture normal conversation input and publish its mirror. This request uses the same conversation, with no self-edit yet.
 3. At the next boundary, read the existing mirror before replacing it. Verify generation and the exact normal-input source prefix captured by that snapshot. Normal input must equal that prefix plus a newly appended suffix; a non-append change invalidates the overlay.
-4. If the mirror is semantically unchanged, retain the accepted overlay and append new activity. If changed, parse and validate the complete candidate, then append all new activity since the snapshot. The tool exchange performing the edit is new activity and is not retrospectively editable by that candidate.
-5. Validate the complete resulting conversation, including exchange pairing and nonempty input. On success, use it for this inference and publish the next generation's mirror. Preserve all new activity; never rerun tools or alter their persisted results.
+4. If the mirror is semantically unchanged, retain the accepted overlay and append new activity. If changed, parse and validate the complete candidate, then append all new activity since the snapshot. A dedicated proposal must still match its staged candidate. File-editing exchanges are new activity and not retrospectively editable by that candidate. For the dedicated tool only, a complete successful edit-only exchange can be replaced by a compact non-authoritative overlay receipt. Mixed/failed exchanges remain whole; never rewrite an individual signed call. Keep only the latest overlay receipt.
+5. Validate the complete resulting conversation, including exchange pairing and nonempty input. Publish the next generation's mirror before activating it for inference, including any receipt. Preserve unrelated new activity; never rerun tools or alter persisted results. Dedicated proposals also require a nonempty edited conversation before their exchange is appended.
 6. On malformed, stale, inconsistent, unreadable, or unpublishable input, discard the candidate and overlay and return the incoming normal conversation. Remain ON, report the rejection/reset reason, and attempt a fresh baseline mirror at a subsequent boundary. A failed mirror publication cannot leave a partially activated edit.
 
 Use deterministic source IDs within each generation and a unique generation token. Append-only calls can extend the mirror without rotating the token; a source unit omitted from a whole-document replacement is deleted even if it was added after an earlier read in the same generation. Surgical edits or an atomic read/modify/write avoid accidentally dropping such units. Old accepted/reset generations remain invalid. Compare source prefix content and metadata, not object identity: Pi clones the request messages. Reset boundaries invalidate both generations and overlays. A retry with an unchanged normal prefix is valid; provider recovery omissions or native edits that change the prefix require fallback, even if no compaction completes.
@@ -120,7 +120,7 @@ Record no durable overlay state. A failure can restore a much larger normal inpu
 
 Use a session-local private temporary directory (0700) and document (0600). Publish extension-generated snapshots with atomic replacement. Model-authored partial writes are still possible; malformed final content is rejected at the context boundary. Resolve only the extension-owned path, reject symlinks/non-regular files, and retain private permissions. Remove the mirror on OFF and session shutdown/reset; create a fresh generation/path on a later ON when needed. No background sweeper, file watcher, archive, or external service.
 
-Expose the document path and concise protocol through a Pi-owned prompt guideline while ON; remove the guideline when OFF. This instruction describes the editing contract, not a fixed strategy or required compaction threshold. Editing tools themselves remain ordinary Pi tools.
+Expose the document path and concise protocol through a Pi-owned prompt guideline while ON; remove the guideline when OFF. This instruction describes the editing contract, not a fixed strategy or required compaction threshold. Prefer the dedicated `context_edit` tool for short operations using generation and unit/message/slot IDs. It stages one proposal per boundary and rejects no-ops. No automatic continuation or separate editing model is used. Consecutive edit-only proposals stay locked after rejection: failure discards draft/overlay but preserves the lock and its conversation checkpoint. Substantive user/assistant-text/unrelated-tool activity unlocks it; OFF/session reset and successful compaction clear it. This explicitly extends ADR 0003.
 
 Status exposes ON/OFF, document path while available, active overlay versus normal-input baseline, and the latest acceptance/rejection/reset reason. Provide a notification for rejection/reset in supported UI modes and a concise stderr diagnostic in non-UI modes; never print conversation contents or credentials in diagnostics. No custom renderer or token-budget UI is needed.
 

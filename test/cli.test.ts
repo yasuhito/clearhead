@@ -115,6 +115,30 @@ test("the shipped Pi CLI loads the extension and exposes edited input over RPC w
   }
 }, 20000);
 
+test("packaged CLI executes short dedicated edits and exposes acceptance without losing raw calls", async () => {
+  const fixture = await cliFixture();
+  const { client } = fixture;
+  try {
+    await client.start();
+    await client.prompt("/context-tidy on");
+    await client.promptAndWait("TIDY_EDIT_ME verbose CLI evidence");
+    expect(await client.getLastAssistantText()).toContain("CLI brief evidence");
+    expect(await client.getLastAssistantText()).toContain(
+      "Context edit accepted",
+    );
+    await client.prompt("/context-tidy status");
+    expect(fixture.notification).toContain("ON; overlay; accepted self-edit");
+    const raw = JSON.stringify(await client.getMessages());
+    expect(raw).toContain("TIDY_EDIT_ME verbose CLI evidence");
+    expect(raw).toContain("context_edit");
+    expect(
+      (await client.getMessages()).some((message) => message.role === "custom"),
+    ).toBe(false);
+  } finally {
+    await fixture.close();
+  }
+}, 20000);
+
 test("OFF detaches replaced mirror ownership and ON creates usable private storage without touching the replacement", async () => {
   const fixture = await cliFixture();
   const { client, dir } = fixture;
