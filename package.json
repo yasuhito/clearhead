@@ -2,6 +2,7 @@
   "name": "pi-context-tidy",
   "version": "0.1.0",
   "private": true,
+  "license": "MIT",
   "type": "module",
   "description": "Independent Pi extension for cumulative context self-editing",
   "engines": {

@@ -89,3 +89,7 @@ npm run check
 Tests load the actual extension through Pi's resource loader, run the real SDK/session runtime and ordinary tools, inspect deterministic provider inputs and persisted history, and also exercise the packaged CLI over RPC. They use isolated temporary settings and fake boundary providers, with no credential access or network services.
 
 See [verification](docs/verification.md) for the executed checks, review, and remaining limitations. This project has no training, automatic editing model calls, durable checkpoints, dashboards, custom compaction, or provider payload patching.
+
+## License
+
+[MIT](LICENSE).
