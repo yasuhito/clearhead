@@ -1,10 +1,9 @@
 {
-  "name": "clearhead",
+  "name": "@yasuhito/clearhead",
   "version": "0.1.0",
-  "private": true,
   "license": "MIT",
   "type": "module",
-  "description": "Independent Pi extension for cumulative context self-editing",
+  "description": "A Pi extension that lets the LLM edit its own context to keep the next prompt lean.",
   "engines": {
     "node": ">=22.19.0"
   },
@@ -32,5 +31,27 @@
     "@types/node": "^22.0.0",
     "typescript": "^5.9.0",
     "vitest": "^4.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/yasuhito/clearhead.git"
+  },
+  "homepage": "https://github.com/yasuhito/clearhead",
+  "bugs": {
+    "url": "https://github.com/yasuhito/clearhead/issues"
+  },
+  "keywords": [
+    "pi-package",
+    "pi-extension",
+    "context-editing"
+  ],
+  "files": [
+    "index.ts",
+    "src/**/*.ts",
+    "docs/**/*.md"
+  ],
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
   }
 }
