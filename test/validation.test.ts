@@ -80,7 +80,7 @@ test.each([
   async (_name, mutate) => {
     const rt = await runtime();
     try {
-      await rt.session.prompt("/clearhead on");
+      await rt.session.prompt("/clearhead");
       await rt.session.prompt("original");
       const path = mirrorPath(rt.requests[0]!);
       const d = await document(path);
@@ -110,7 +110,7 @@ test.each(["{", '{"format":"clearhead/v1","format":"clearhead/v1"}'])(
   async (bad) => {
     const rt = await runtime();
     try {
-      await rt.session.prompt("/clearhead on");
+      await rt.session.prompt("/clearhead");
       await rt.session.prompt("original");
       const path = mirrorPath(rt.requests[0]!);
       const d = await document(path);

@@ -13,7 +13,7 @@ test("unchanged documents preserve Pi system/tool transitions instead of forcing
   const rt = await runtime();
   try {
     await rt.session.prompt("normal start");
-    await rt.session.prompt("/clearhead on");
+    await rt.session.prompt("/clearhead");
     await rt.session.prompt("first ON request");
     const before = rt.requests[1]!;
     expect(
@@ -34,7 +34,7 @@ test("unchanged documents preserve Pi system/tool transitions instead of forcing
 test("unchanged snapshots retain user images and empty text replacements without altering saved entries", async () => {
   const rt = await runtime();
   try {
-    await rt.session.prompt("/clearhead on");
+    await rt.session.prompt("/clearhead");
     await rt.session.prompt("image instruction", {
       images: [
         {

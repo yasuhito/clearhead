@@ -35,7 +35,7 @@ test("ordinary read then write can edit the observed document across append-only
     return [{ type: "text", text: "done" }];
   });
   try {
-    await rt.session.prompt("/clearhead on");
+    await rt.session.prompt("/clearhead");
     await rt.session.prompt("original read-write intent");
     expect(conversation(rt.requests[2]!)[0]).toMatchObject({
       role: "user",

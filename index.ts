@@ -51,13 +51,13 @@ export default function contextTidy(pi: ExtensionAPI) {
     if (ctx.mode === "tui")
       ctx.ui.setStatus(
         "clearhead",
-        `clearhead ${enabled ? "ON" : "OFF"} ${overlay ? "overlay" : "normal"}`,
+        enabled ? `clearhead ${overlay ? "edited" : "ready"}` : undefined,
       );
   }
   function report(ctx: ExtensionContext, reason: string, warning = false) {
     outcome = reason;
     showStatus(ctx);
-    const text = `clearhead ${enabled ? "ON" : "OFF"}; ${overlay ? "overlay" : "normal input"}; ${reason}${mirror.path ? `; document: ${mirror.path}` : ""}`;
+    const text = `clearhead ${enabled ? "active" : "inactive"}; ${overlay ? "overlay" : "normal input"}${reason === "normal input" ? "" : `; ${reason}`}${mirror.path ? `; document: ${mirror.path}` : ""}`;
     if (ctx.hasUI) ctx.ui.notify(text, warning ? "warning" : "info");
     else process.stderr.write(`${text}\n`);
   }
@@ -118,7 +118,7 @@ export default function contextTidy(pi: ExtensionAPI) {
           content: [
             {
               type: "text",
-              text: "Context edit staged, not yet applied. It is validated at the next inference and takes effect only if it passes. The next context document shows the outcome: if it still holds the unedited content, the edit was rejected and the reason is in /clearhead status.",
+              text: "Context edit staged, not yet applied. It is validated at the next inference and takes effect only if it passes. The next context document shows the outcome: if it still holds the unedited content, the edit was rejected and the reason is in /clearhead-status.",
             },
           ],
           details: undefined,
@@ -142,38 +142,49 @@ export default function contextTidy(pi: ExtensionAPI) {
     },
   });
   pi.on("session_start", (_event, ctx) => showStatus(ctx));
-  pi.registerCommand("clearhead", {
-    description: "Context self-editing: on, off, status",
-    handler: async (args, ctx) => {
+  pi.registerCommand("clearhead-status", {
+    description: "Show context editing state and last outcome",
+    handler: async (_args, ctx) => {
       await ctx.waitForIdle();
-      if (args.trim() === "on") {
-        if (!enabled) {
-          try {
-            await mirror.create();
-            enabled = true;
-            outcome = "awaiting normal-input baseline";
-          } catch {
-            report(ctx, "cannot enable: mirror creation failed", true);
-            return;
-          }
-        }
-        report(ctx, outcome);
-      } else if (args.trim() === "off") {
-        enabled = false;
-        discardOverlay();
+      report(ctx, outcome);
+    },
+  });
+  pi.registerCommand("clearhead-reset", {
+    description: "Discard context edits and restore normal Pi input",
+    handler: async (_args, ctx) => {
+      await ctx.waitForIdle();
+      enabled = false;
+      discardOverlay();
+      try {
+        await mirror.remove();
+        report(ctx, "reset complete");
+      } catch {
+        report(ctx, "reset complete; mirror cleanup failed", true);
+      }
+    },
+  });
+  pi.registerCommand("clearhead", {
+    description:
+      "Shorten context now; optional instructions specify what to keep",
+    handler: async (args, ctx) => {
+      if (!ctx.isIdle()) {
+        report(ctx, "cannot compact: agent is busy; retry when idle", true);
+        return;
+      }
+      if (!enabled) {
         try {
-          await mirror.remove();
-          report(ctx, "reset: OFF");
+          await mirror.create();
+          enabled = true;
+          outcome = "awaiting normal-input baseline";
         } catch {
-          report(ctx, "reset: OFF; mirror cleanup failed", true);
+          report(ctx, "cannot compact: mirror creation failed", true);
+          return;
         }
-      } else
-        report(
-          ctx,
-          args.trim() === "status"
-            ? outcome
-            : "usage: /clearhead on|off|status",
-        );
+      }
+      const instructions = args.trim();
+      pi.sendUserMessage(
+        `Shorten your effective context now. Read the current context document for its generation and IDs, then use context_edit with short operations. Keep the task, latest user intent, decisions, constraints, unresolved work and exact values still needed. Remove or summarize obsolete long text and tool output. Do not generate Python or reproduce the full JSON document. If nothing can safely be shortened, explain that without submitting a no-op edit. After the next inference applies the edit, use the acceptance receipt or reread the document to verify it, then briefly report what was kept. Do not repeat an already accepted edit. Do not claim a token reduction without measured evidence.${instructions ? `\nAdditional instructions: ${instructions}` : ""}`,
+      );
     },
   });
   pi.on("before_agent_start", (event) => {

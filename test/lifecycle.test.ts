@@ -15,7 +15,7 @@ async function overlay(
   reply?: Parameters<typeof runtime>[0],
 ) {
   const rt = await runtime(reply, extra, settings);
-  await rt.session.prompt("/clearhead on");
+  await rt.session.prompt("/clearhead");
   await rt.session.prompt("original intent");
   const path = mirrorPath(rt.requests[0]!);
   const d = await document(path);

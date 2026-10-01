@@ -67,11 +67,14 @@ test("the shipped Pi CLI loads the extension and exposes edited input over RPC w
   try {
     await client.start();
     const commands = await client.getCommands();
-    expect(commands.some((c) => c.name === "clearhead")).toBe(true);
+    for (const name of ["clearhead", "clearhead-status", "clearhead-reset"]) {
+      expect(commands.some((c) => c.name === name)).toBe(true);
+    }
+    expect(commands.some((c) => c.name === "clearhead-compact")).toBe(false);
     expect(commands.some((c) => c.name === "context-tidy")).toBe(false);
-    expect(await client.prompt("/clearhead on")).toBe("handled");
     await client.promptAndWait("original CLI input");
-    await client.prompt("/clearhead status");
+    await client.promptAndWait("/clearhead");
+    await client.prompt("/clearhead-status");
     const mirror = fixture.notification.match(/document: (.+)/)?.[1];
     expect(mirror).toBeTruthy();
     const d = await document(mirror!);
@@ -83,9 +86,9 @@ test("the shipped Pi CLI loads the extension and exposes edited input over RPC w
     const response = await client.getLastAssistantText();
     expect(response).toContain("edited CLI input");
     expect(response).not.toContain("original CLI input");
-    await client.prompt("/clearhead on");
-    await client.prompt("/clearhead status");
-    expect(fixture.notification).toContain("ON; overlay; accepted");
+    await client.promptAndWait("/clearhead");
+    await client.prompt("/clearhead-status");
+    expect(fixture.notification).toContain("active; overlay; accepted");
     expect(fixture.notification).toContain(mirror);
     await client.promptAndWait("idempotent ON");
     expect(await client.getLastAssistantText()).toContain("edited CLI input");
@@ -97,22 +100,22 @@ test("the shipped Pi CLI loads the extension and exposes edited input over RPC w
     source(restored).messages[0]!.texts[0]!.text = "original CLI input";
     await writeFile(mirror!, JSON.stringify(restored));
     await client.promptAndWait("restore original text");
-    await client.prompt("/clearhead status");
-    expect(fixture.notification).toContain("ON; normal input; accepted");
+    await client.prompt("/clearhead-status");
+    expect(fixture.notification).toContain("active; normal input; accepted");
     await writeFile(mirror!, "PRIVATE_PAYLOAD_MARKER");
     await client.promptAndWait("invalid candidate");
-    await client.prompt("/clearhead status");
+    await client.prompt("/clearhead-status");
     expect(fixture.notification).toContain(
-      "ON; normal input; rejected: malformed JSON",
+      "active; normal input; rejected: malformed JSON",
     );
     expect(fixture.notification).not.toContain("PRIVATE_PAYLOAD_MARKER");
     expect(await client.getLastAssistantText()).toContain("original CLI input");
     await client.promptAndWait("fresh baseline");
-    await client.prompt("/clearhead status");
+    await client.prompt("/clearhead-status");
     expect(fixture.notification).toContain("rejected: malformed JSON");
-    expect(await client.prompt("/clearhead off")).toBe("handled");
-    await client.prompt("/clearhead status");
-    expect(fixture.notification).toContain("clearhead OFF; normal input");
+    expect(await client.prompt("/clearhead-reset")).toBe("handled");
+    await client.prompt("/clearhead-status");
+    expect(fixture.notification).toContain("clearhead inactive; normal input");
     await expect(access(mirror!)).rejects.toThrow();
   } finally {
     await fixture.close();
@@ -124,14 +127,16 @@ test("packaged CLI executes short dedicated edits and exposes acceptance without
   const { client } = fixture;
   try {
     await client.start();
-    await client.prompt("/clearhead on");
+    await client.promptAndWait("/clearhead");
     await client.promptAndWait("TIDY_EDIT_ME verbose CLI evidence");
     expect(await client.getLastAssistantText()).toContain("CLI brief evidence");
     expect(await client.getLastAssistantText()).toContain(
       "Context edit accepted",
     );
-    await client.prompt("/clearhead status");
-    expect(fixture.notification).toContain("ON; overlay; accepted self-edit");
+    await client.prompt("/clearhead-status");
+    expect(fixture.notification).toContain(
+      "active; overlay; accepted self-edit",
+    );
     const raw = JSON.stringify(await client.getMessages());
     expect(raw).toContain("TIDY_EDIT_ME verbose CLI evidence");
     expect(raw).toContain("context_edit");
@@ -149,9 +154,9 @@ test("OFF detaches replaced mirror ownership and ON creates usable private stora
   let replacedDirectory: string | undefined;
   try {
     await client.start();
-    await client.prompt("/clearhead on");
+    await client.promptAndWait("/clearhead");
     await client.promptAndWait("before directory replacement");
-    await client.prompt("/clearhead status");
+    await client.prompt("/clearhead-status");
     const oldMirror = fixture.notification.match(/document: (.+)/)![1]!;
     replacedDirectory = dirname(oldMirror);
     // Preserve the original inode so inode reuse cannot hide the mismatch.
@@ -161,11 +166,12 @@ test("OFF detaches replaced mirror ownership and ON creates usable private stora
     await writeFile(sentinel, "replacement must remain untouched");
     await writeFile(oldMirror, "replacement document must not be adopted");
     const replacementIdentity = await stat(replacedDirectory);
-    await client.prompt("/clearhead off");
+    await client.prompt("/clearhead-reset");
     expect(fixture.notification).toContain(
-      "OFF; normal input; reset: OFF; mirror cleanup failed",
+      "inactive; normal input; reset complete; mirror cleanup failed",
     );
-    await client.prompt("/clearhead on");
+    await client.promptAndWait("/clearhead");
+    await client.prompt("/clearhead-status");
     const freshMirror = fixture.notification.match(/document: (.+)/)![1]!;
     expect(dirname(freshMirror)).not.toBe(replacedDirectory);
     expect((await stat(dirname(freshMirror))).mode & 0o777).toBe(0o700);
@@ -176,8 +182,8 @@ test("OFF detaches replaced mirror ownership and ON creates usable private stora
     await writeFile(freshMirror, JSON.stringify(fresh));
     await client.promptAndWait("verify recovered self-edit");
     expect(await client.getLastAssistantText()).toContain("fresh edited input");
-    await client.prompt("/clearhead status");
-    expect(fixture.notification).toContain("ON; overlay; accepted");
+    await client.prompt("/clearhead-status");
+    expect(fixture.notification).toContain("active; overlay; accepted");
     await client.stop();
     await expect(access(dirname(freshMirror))).rejects.toThrow();
     expect(await readdir(replacedDirectory)).toEqual([
@@ -200,5 +206,38 @@ test("OFF detaches replaced mirror ownership and ON creates usable private stora
     // Only the test removes its replacement fixture, never the extension.
     if (replacedDirectory)
       await rm(replacedDirectory, { recursive: true, force: true });
+  }
+}, 20000);
+
+test("clearhead auto-enables and sends an explicit self-edit request through the shipped CLI", async () => {
+  const fixture = await cliFixture();
+  const { client } = fixture;
+  try {
+    await client.start();
+    expect(
+      (await client.getCommands()).some((c) => c.name === "clearhead"),
+    ).toBe(true);
+    await client.prompt("/clearhead-status");
+    expect(fixture.notification).toBe("clearhead inactive; normal input");
+    expect(await client.getMessages()).toHaveLength(0);
+    await client.promptAndWait("/clearhead Keep decisions. TIDY_EDIT_ME");
+    expect(await client.getLastAssistantText()).toContain("CLI brief evidence");
+    await client.prompt("/clearhead-status");
+    expect(fixture.notification).toContain("accepted self-edit");
+    const history = JSON.stringify(await client.getMessages());
+    expect(history).toContain("Keep decisions. TIDY_EDIT_ME");
+    expect(history).toContain("context_edit");
+    await client.promptAndWait("/clearhead");
+    expect(await client.getLastAssistantText()).toContain(
+      "Shorten your effective context now",
+    );
+    await client.prompt("/clearhead-reset");
+    expect(fixture.notification).toContain("clearhead inactive");
+    await client.promptAndWait("after reset");
+    const restored = await client.getLastAssistantText();
+    expect(restored).toContain("Keep decisions. TIDY_EDIT_ME");
+    expect(restored).not.toContain("Context edit accepted");
+  } finally {
+    await fixture.close();
   }
 }, 20000);

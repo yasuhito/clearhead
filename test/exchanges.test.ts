@@ -53,7 +53,7 @@ async function exchanges() {
         }),
     ],
   );
-  await rt.session.prompt("/clearhead on");
+  await rt.session.prompt("/clearhead");
   await rt.session.prompt("use probes");
   return { ...rt, executed, path: mirrorPath(rt.requests[2]!) };
 }

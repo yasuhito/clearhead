@@ -12,7 +12,7 @@ import {
 test("latest user intent is editable and growing notes are non-authoritative request-local memory", async () => {
   const rt = await runtime();
   try {
-    await rt.session.prompt("/clearhead on");
+    await rt.session.prompt("/clearhead");
     await rt.session.prompt("latest user intent");
     const path = mirrorPath(rt.requests[0]!);
     const d = await document(path);

@@ -14,7 +14,7 @@ test("native threshold compaction remains enabled and resets a cumulative overla
     compaction: { enabled: false, keepRecentTokens: 0, reserveTokens: 127999 },
   });
   try {
-    await rt.session.prompt("/clearhead on");
+    await rt.session.prompt("/clearhead");
     await rt.session.prompt("original information");
     const path = mirrorPath(rt.requests[0]!);
     const d = await document(path);

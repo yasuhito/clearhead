@@ -46,7 +46,7 @@ test("writing back an older revision deletes only units the writer saw and keeps
     return done;
   });
   try {
-    await rt.session.prompt("/clearhead on");
+    await rt.session.prompt("/clearhead");
     await rt.session.prompt("obsolete first");
     await rt.session.prompt("second with peek");
     const input = conversation(rt.requests[4]!);
@@ -70,7 +70,7 @@ test("writing back an older revision deletes only units the writer saw and keeps
 test("a revision the extension never published is rejected atomically", async () => {
   const rt = await runtime();
   try {
-    await rt.session.prompt("/clearhead on");
+    await rt.session.prompt("/clearhead");
     await rt.session.prompt("original intent");
     const path = mirrorPath(rt.requests[0]!);
     const d = await document(path);
@@ -98,7 +98,7 @@ test("append-only inferences advance the revision while keeping the generation",
     return done;
   });
   try {
-    await rt.session.prompt("/clearhead on");
+    await rt.session.prompt("/clearhead");
     await rt.session.prompt("first");
     await rt.session.prompt("second");
     const [first, second] = published;
@@ -134,7 +134,7 @@ test("an older revision that writes no units at all is still an empty edit and i
     return done;
   });
   try {
-    await rt.session.prompt("/clearhead on");
+    await rt.session.prompt("/clearhead");
     await rt.session.prompt("first");
     const reports = await reportsDuring(() => rt.session.prompt("second"));
     expect(reports).toContain("rejected: empty effective context");

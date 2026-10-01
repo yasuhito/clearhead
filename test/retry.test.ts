@@ -18,7 +18,7 @@ test("a provider retry with the same source prefix preserves the overlay without
     { retry: { enabled: true, maxRetries: 1, baseDelayMs: 1 } },
   );
   try {
-    await rt.session.prompt("/clearhead on");
+    await rt.session.prompt("/clearhead");
     await rt.session.prompt("original intent");
     const path = mirrorPath(rt.requests[0]!);
     const d = await document(path);

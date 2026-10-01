@@ -18,9 +18,9 @@ Mirror the working context into a private editable document. The editing UX amen
 
 ### Lifetime and controls
 
-V1 has no durable checkpoints. Reset overlay and pending edits on reload/resume, branch change, session replacement, and OFF. Starting again reintroduces original material from Pi's current normal input. The overlay is cumulative during an uninterrupted active session, not across these reset boundaries.
+V1 has no durable checkpoints. Reset overlay and pending edits on reload/resume, branch change, session replacement, and explicit reset. Starting again reintroduces original material from Pi's current normal input. The overlay is cumulative during an uninterrupted active session, not across these reset boundaries.
 
-Expose clear explicit ON/OFF. Selected operational defaults: OFF on fresh extension load; `/clearhead on|off|status`; a small TUI status indicator when available. OFF returns to normal Pi input and discards edits, not merely pauses them. No custom dashboard. ON is idempotent while already ON; it does not clear an active overlay. Control changes wait until the agent is idle to avoid changing the mode midway through an active tool batch.
+Selected operational defaults: inactive on fresh extension load; `/clearhead [instructions]` activates self-editing and requests model-directed shortening, preserving an existing overlay. `/clearhead-status` inspects state, and `/clearhead-reset` discards edits and restores normal Pi input. No separate on/off controls or custom dashboard. Status and reset wait until idle; shortening refuses while busy instead of queuing a request. A small TUI indicator makes the active state visible.
 
 ### Native compaction
 

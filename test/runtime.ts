@@ -1,6 +1,6 @@
 import { mkdtemp, readFile, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
-import { join, resolve } from "node:path";
+import { join } from "node:path";
 import {
   type AssistantMessage,
   createAssistantMessageEventStream,
@@ -18,6 +18,7 @@ import {
   SettingsManager,
 } from "@earendil-works/pi-coding-agent";
 
+import extension from "../index.ts";
 import type { ContextDocument, SourceUnit } from "../src/document.ts";
 
 export function sources(d: ContextDocument): SourceUnit[] {
@@ -42,6 +43,7 @@ export async function runtime(
   const dir = await mkdtemp(join(tmpdir(), "tidy-test-"));
   const requests: TranscriptContext[] = [];
   const errors: string[] = [];
+  const compactRequests: unknown[] = [];
   const settingsManager = SettingsManager.inMemory({
     compaction: { enabled: false },
     retry: { enabled: false },
@@ -159,8 +161,16 @@ export async function runtime(
         cwd: options.cwd,
         agentDir: options.agentDir,
         settingsManager,
-        additionalExtensionPaths: [resolve("index.ts")],
-        extensionFactories: extra,
+        extensionFactories: [
+          (pi) =>
+            extension({
+              ...pi,
+              sendUserMessage: (content) => {
+                compactRequests.push(content);
+              },
+            }),
+          ...extra,
+        ],
         noSkills: true,
         noContextFiles: true,
         noPromptTemplates: true,
@@ -208,6 +218,7 @@ export async function runtime(
     },
     host,
     requests,
+    compactRequests,
     errors,
     dir,
     async close() {

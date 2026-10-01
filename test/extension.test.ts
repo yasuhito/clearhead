@@ -24,7 +24,7 @@ test("explicit ON lets ordinary Bash edits update the automatic next inference a
     expect(getCurrentSystemPrompt(rt.requests[0]!.messages)).not.toContain(
       "Context document:",
     );
-    await rt.session.prompt("/clearhead on");
+    await rt.session.prompt("/clearhead");
     await rt.session.prompt("edit now");
     expect(conversation(rt.requests[2]!)[0]).toMatchObject({
       role: "user",
@@ -47,7 +47,7 @@ test("explicit ON lets ordinary Bash edits update the automatic next inference a
     expect(rt.manager.getBranch().some((e) => e.type === "context_edit")).toBe(
       false,
     );
-    await rt.session.prompt("/clearhead off");
+    await rt.session.prompt("/clearhead-reset");
     await rt.session.prompt("after off");
     expect(JSON.stringify(conversation(rt.requests[4]!))).toContain(
       "original long instruction",

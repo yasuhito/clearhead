@@ -48,7 +48,7 @@ test("native deletion of older exchanges cannot hide fresh user activity from th
       : [{ type: "text", text: "done" }];
   });
   try {
-    await r.session.prompt("/clearhead on");
+    await r.session.prompt("/clearhead");
     for (const prompt of ["old first", "old second", "old third"])
       await r.session.prompt(prompt);
     await r.session.prompt("accept dedicated edit");

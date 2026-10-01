@@ -35,7 +35,7 @@ test("same parent model replaces a slot using IDs without reproducing old text",
     ];
   });
   try {
-    await r.session.prompt("/clearhead on");
+    await r.session.prompt("/clearhead");
     await r.session.prompt("verbose evidence ".repeat(100));
     expect(JSON.stringify(conversation(r.requests[1]!))).toContain(
       "brief evidence",
@@ -104,7 +104,7 @@ test("consecutive edit-only receipts cannot induce a re-edit loop", async () => 
     ];
   });
   try {
-    await r.session.prompt("/clearhead on");
+    await r.session.prompt("/clearhead");
     await r.session.prompt("original evidence");
     // The locked re-edit attempts are rejected alone; the first accepted edit
     // and its single receipt remain, and no new receipt is minted.
@@ -169,7 +169,7 @@ test("schema-invalid dedicated calls are rejected alone and keep a previously ac
     ];
   });
   try {
-    await r.session.prompt("/clearhead on");
+    await r.session.prompt("/clearhead");
     await r.session.prompt("original intent");
     await r.session.prompt("new user activity");
     const input = JSON.stringify(conversation(r.requests[3]!));
