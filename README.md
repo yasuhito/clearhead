@@ -17,8 +17,6 @@ pi --extension ./index.ts
 
 Alternatively, use the locally installed Pi: `./node_modules/.bin/pi --extension ./index.ts`. No global installation is needed. Npm publication is disabled (`private: true` in package metadata); no npm release is part of v1.
 
-The project was renamed from `pi-context-tidy` to `clearhead`. The user command is `/clearhead` (replacing `/context-tidy`, with no legacy alias). The `context_edit` tool and `pi-context-tidy/v1` document format remain unchanged.
-
 The extension starts **OFF**. Commands:
 
 - `/clearhead on`: enable; idempotent while already ON.
